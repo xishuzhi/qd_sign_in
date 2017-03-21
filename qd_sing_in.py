@@ -6,6 +6,11 @@ import traceback
 import logging
 import os
 
+ERROR = -1
+NEXT_DAY = 1
+FINISH = 2
+
+
 # 测试用例执行函数
 def work(browser):
     url = "http://t.qidian.com/Profile/Score.php"
@@ -53,6 +58,60 @@ def writeLog():
     #print(s)
     pass
 
+# def checkClick2(br):
+#     data_now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+#     print("star time :" + data_now)
+#     isNextDay = False
+#     isFinish = False
+#     while True:
+#         os.system('cls')
+#         try:
+#             n_t = datetime.datetime.now()
+#             now = n_t.strftime('%d')
+#             this_time = n_t.strftime('%Y-%m-%d %H:%M:%S')
+#             print(this_time)
+#             if str(data_now) != str(now):
+#                 data_now = now
+#                 isNextDay = True
+#                 isFinish = False
+#                 br.refresh()
+#                 time.sleep(15)
+#         except:
+#             print("time error")
+#         try:
+#             button_data = br.find_element_by_class_name("plus-items")
+#             radios = button_data.find_elements_by_class_name("btn")
+#             sing_in_count = 0
+#             for bt in radios:
+#                 print(bt.text)
+#                 if(bt.text[0:3] == '经验值'):
+#                     sing_in_count = sing_in_count + 1
+#                 if bt.text == '可领取':
+#                     print("点击")
+#                     isNextDay = False
+#                     bt.click()
+#                     time.sleep(5)
+#                     br.refresh()
+#                     time.sleep(10)
+#             print("sing_in_count = "+ sing_in_count)
+#             if sing_in_count == 8:
+#                 isFinish = True
+#                 isNextDay = False
+#         except:
+#             writeLog()
+#             print("............")
+#             br.refresh()
+#             time.sleep(15)
+#             return checkClick(br)
+#         time.sleep(5)
+#         if isNextDay:
+#             br.refresh()
+#             time.sleep(10)
+#         if isFinish:
+#             print('Wait for the next day!')
+#             time.sleep(1)
+#             return checkClick(br)
+
 def checkClick(br):
     data_now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print("star time :" + data_now)
@@ -71,41 +130,44 @@ def checkClick(br):
                 isFinish = False
                 br.refresh()
                 time.sleep(15)
-            if isFinish:
-                print('Wait for the next day!')
-                time.sleep(1)
-                return checkClick(br)
         except:
             print("time error")
-        try:
-            button_data = br.find_element_by_class_name("plus-items")
-            radios = button_data.find_elements_by_class_name("btn")
-            sing_in_count = 0
-            for bt in radios:
-                print(bt.text)
-                if(bt.text[0:3] == '经验值'):
-                    sing_in_count = sing_in_count + 1
-                if bt.text == '可领取':
-                    print("点击")
-                    isNextDay = False
-                    bt.click()
-                    time.sleep(5)
-                    br.refresh()
-                    time.sleep(10)
-            print("sing_in_count = "+ sing_in_count)
-            if sing_in_count == 8:
-                isFinish = True
-        except:
-            writeLog()
-            print("............")
-            br.refresh()
-            time.sleep(15)
-            return checkClick(br)
-        time.sleep(5)
+        result = checkSingIn(br)
+        if result == NEXT_DAY:
+            isNextDay = False
         if isNextDay:
             br.refresh()
             time.sleep(10)
+        if result == FINISH:
+            isFinish = True
+        if isFinish:
+            print('Wait for the next day!')
+            time.sleep(1)
+            return checkClick(br)
 
+def checkSingIn(br):
+    try:
+        button_data = br.find_element_by_class_name("plus-items")
+        radios = button_data.find_elements_by_class_name("btn")
+        sing_in_count = 0
+        for bt in radios:
+            print(bt.text)
+            if bt.text == '可领取':
+                print("点击")
+                bt.click()
+                time.sleep(5)
+                br.refresh()
+                time.sleep(10)
+            if (bt.text[0:3] == '经验值'):
+                sing_in_count = sing_in_count + 1
+        print("sing_in_count = " + sing_in_count)
+        if sing_in_count == 8:
+            return FINISH
+        elif sing_in_count > 0:
+            return NEXT_DAY
+    except:
+        print("............")
+        return ERROR
 
 if __name__ == "__main__":
     browser = webdriver.Chrome()
