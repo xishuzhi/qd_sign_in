@@ -13,15 +13,14 @@ def work(browser):
     try:
         if os.path.exists('config.txt'):
             with open('config.txt') as f:
-                txt = f.read();
+                txt = f.read()
                 n = txt.split(',')
                 # 输入账号和密码
                 browser.find_element_by_id("username").send_keys(n[0])
                 browser.find_element_by_id("password").send_keys(n[1])
-                time.sleep(2)
+                time.sleep(1)
                 # 点击按钮提交登录表单
                 browser.find_element_by_css_selector("a.red-btn.go-login.btnLogin.login-button").click()
-
                 time.sleep(5)
         #print(browser.current_url)
         while(browser.current_url != url):
@@ -57,6 +56,8 @@ def writeLog():
 def checkClick(br):
     data_now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print("star time :" + data_now)
+    isNextDay = False
+    isFinish = False
     while True:
         os.system('cls')
         try:
@@ -66,85 +67,53 @@ def checkClick(br):
             print(this_time)
             if str(data_now) != str(now):
                 data_now = now
-                br.refresh();
+                isNextDay = True
+                isFinish = False
+                br.refresh()
                 time.sleep(15)
+            if isFinish:
+                print('Wait for the next day!')
+                time.sleep(1)
+                return checkClick(br)
         except:
             print("time error")
         try:
             button_data = br.find_element_by_class_name("plus-items")
             radios = button_data.find_elements_by_class_name("btn")
+            sing_in_count = 0
             for bt in radios:
                 print(bt.text)
+                if(bt.text[0:3] == '经验值'):
+                    sing_in_count = sing_in_count + 1
                 if bt.text == '可领取':
                     print("点击")
+                    isNextDay = False
                     bt.click()
                     time.sleep(5)
-                    br.refresh();
-                    time.sleep(15)
+                    br.refresh()
+                    time.sleep(10)
+            print("sing_in_count = "+ sing_in_count)
+            if sing_in_count == 8:
+                isFinish = True
         except:
             writeLog()
-            print("zong shi zhi xing")
-            br.refresh();
+            print("............")
+            br.refresh()
             time.sleep(15)
             return checkClick(br)
         time.sleep(5)
-
-
-def cc(br):
-    data_now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print("star time :" + data_now)
-    radios = []
-    for i in range(6):
-        radios.append("/html/body/div[8]/div[2]/div[2]/div[2]/ul/li[%s]/a" % i)
-    while True:
-        os.system('cls')
-        try:
-            n_t = datetime.datetime.now()
-            now = n_t.strftime('%d')
-            this_time = n_t.strftime('%Y-%m-%d %H:%M:%S')
-            print(this_time)
-            if str(data_now) != str(now):
-                data_now = now
-                br.refresh();
-                time.sleep(15)
-        except:
-            print("time error")
-        try:
-            for x in radios:
-                try:
-                    bt = br.find_elements_by_xpath(x)
-                    print(bt.text)
-                    if bt.text == '可领取':
-                        print("点击")
-                        bt.click()
-                        time.sleep(5)
-                        br.refresh();
-                        time.sleep(15)
-                except:
-                    print('cant find %s'% x)
-        except:
-            writeLog()
-            print("zong shi zhi xing")
-            br.refresh();
-            time.sleep(15)
-            return checkClick(br)
-        time.sleep(5)
+        if isNextDay:
+            br.refresh()
+            time.sleep(10)
 
 
 if __name__ == "__main__":
     browser = webdriver.Chrome()
     start_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    this_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     log_str = "start time :%s\n" % start_time
     if work(browser):
         checkClick(browser)
-        #cc(browser)
     browser.quit()
-    # while True:
-    #     now = datetime.datetime.now().strftime('%d-%S')
-    #     if (data_now != now):
-    #         data_now = now
-    #         print(data_now)
 
 
 """
