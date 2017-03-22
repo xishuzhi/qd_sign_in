@@ -45,6 +45,17 @@ def open_qd(browser):
         print(u"failure")
         writeLog()
 
+def open_new(browser):
+    js = 'window.open("http://t.qidian.com/Profile/Score.php");'
+    browser.execute_script(js)
+    handles = browser.window_handles
+    for handle in handles:  # 切换窗口（切换到搜狗）
+        if handle != browser.current_window_handle:
+            print
+            'switch to ', handle
+            browser.switch_to_window(handle)
+
+            break
 
 # 写错误日志并截图
 def writeLog():
@@ -60,11 +71,13 @@ def writeLog():
     pass
 
 def checkClick(br):
+    url = "http://t.qidian.com/Profile/Score.php"
     n_t = datetime.datetime.now()
     data_now = n_t.strftime('%Y-%m-%d %H:%M:%S')
     print("star time :" + data_now)
     data_now = n_t.strftime('%d')
     isNextDay = False
+    sing_in_count = 0
     while True:
         os.system('cls')
         try:
@@ -78,25 +91,31 @@ def checkClick(br):
                 time.sleep(15)
         except:
             print("time error")
-        try:
-            button_data = br.find_element_by_class_name("plus-items")
-            radios = button_data.find_elements_by_class_name("btn")
-            for bt in radios:
-                print(bt.text)
-                if bt.text == '可领取':
-                    print("点击")
-                    bt.click()
-                    isNextDay = False
-                    time.sleep(5)
-                    br.refresh()
+        if browser.current_url == url:
+            try:
+                button_data = br.find_element_by_class_name("plus-items")
+                radios = button_data.find_elements_by_class_name("btn")
+                for bt in radios:
+                    print(bt.text)
+                    if bt.text == '可领取':
+                        print("点击")
+                        bt.click()
+                        isNextDay = False
+                        time.sleep(5)
+                        br.refresh()
+                        time.sleep(10)
+                    if bt.text[0:3] == '经验值':
+                        sing_in_count += 1
+                if sing_in_count == 8:
+                    browser.get('http://t.qidian.com')
                     time.sleep(10)
-        except:
-            writeLog()
-            print("............")
-            br.refresh()
-            time.sleep(15)
-            return checkClick(br)
-        time.sleep(5)
+            except:
+                writeLog()
+                print("............")
+                br.refresh()
+                time.sleep(15)
+                return checkClick(br)
+            time.sleep(5)
         if isNextDay:
             print('next day !')
             #br.refresh()
