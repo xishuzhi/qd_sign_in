@@ -1,9 +1,11 @@
 
 from bs4 import BeautifulSoup
 from urllib import request
+from selenium import webdriver
 import chardet
 import os
 import sys
+import time
 sys_code = sys.getfilesystemencoding()
 
 url = "https://f.qidian.com/"
@@ -28,21 +30,29 @@ def get_limit_list():
 #打开链接获取页面源码
 def get_html(url,count=0):
     try:
-        fp = request.urlopen(url,timeout=300)
-        #fp = request.urlopen(request.Request(url, headers = config.QD_HEADER), None)
+        fp = request.urlopen(url)
+        # req = request.Request(url)
+        # fp = request.urlopen(req)
+        html = fp.read()  # python3.x read the html as html code bytearray
     except Exception as e:
         print(e)
         print('页面打开失败：[%s]' % url)
-        return "404"
-    html = fp.read()  # python3.x read the html as html code bytearray
+        if(count > 5):
+            return '404'
+        return get_html(url,count+1)
+    html = html.decode('utf-8')
     fp.close()
-    codedetect = chardet.detect(html[0:100])['encoding']
-    if codedetect == "GB2312":
-        html = html.decode('gbk')
-    elif codedetect == "utf-8":
-        html = html.decode('utf-8')
     return html
-#保持章节和内容到文件
+#用浏览器打开网页获得源码
+def get_html_by_browser(url):
+    browser = webdriver.Chrome()
+    browser.get(url)
+    time.sleep(10)
+    html_source = browser.page_source
+    browser.quit()
+    return html_source
+
+#保存章节和内容到文件
 def save_volume(url,filePath):
     ht = get_html(url)
     # ht = get_html("http://vipreader.qidian.com/chapter/3155120/54155582")
@@ -78,23 +88,33 @@ def save_volume(url,filePath):
 
 #从章节目录中提取章节名和章节链接
 def get_volume_list(url='',count=0):
-    #url = "http://book.qidian.com/info/1004289255#Catalog"
-    # fp = request.urlopen(url)
-    # html = fp.read();
     try:
-        html = get_html(url)
+        html = ''
+        if count==0:
+            html = get_html(url)
+        elif count==1:
+            html = get_html_by_browser(url)
         metaSoup = BeautifulSoup(html, "html.parser")
-        volume_list = metaSoup.find('div', attrs={'class': 'volume-wrap'}).findAll('li')
-        #print(volume_list)
+        # # 查找章节数量
+        # catalogCount = metaSoup.find('li', attrs={'class': 'j_catalog_block'}).i
+        # count = catalogCount.get_text()
+        # count = count[1:-2]
+        volume_wrap = metaSoup.findAll('div', attrs={'class': 'volume-wrap'})
         v_list = []
-        for i in volume_list:
-            #print("章节名：%s , 链接：%s" % (i.get_text(),i.a['href']))
-            d = {'name':i.get_text(),'url':'http:'+i.a['href']}
-            v_list.append(d)
+        for li in volume_wrap:
+            volume_list = li.findAll('li')
+            #print(volume_list)
+            for i in volume_list:
+                #print("章节名：%s , 链接：%s" % (i.get_text(),i.a['href']))
+                d = {'name':i.get_text(),'url':'http:'+i.a['href']}
+                v_list.append(d)
+        if len(v_list) == 0 and count == 0:
+            #print("count="+str(count))
+            return get_volume_list(url, count + 1)
         return v_list
     except:
         print('error url = %s'% url)
-        if count < 5:
+        if count == 0:
             return get_volume_list(url,count+1)
         else:
             print("write to file!")
@@ -108,10 +128,11 @@ def escape_file_path(path):
     path = path.replace('/', '-')
     path = path.replace('\\', '-')
     path = path.replace('*', '-')
-    path = path.replace('?', '-')
+    path = path.replace('?', '？')
     return path
 
 if __name__ == "__main__":
+    #get_html_by_browser("https://book.qidian.com/info/1003383443#Catalog")
     #获取当前路径
     print(os.getcwd())
     thisPath = os.getcwd()
@@ -124,7 +145,7 @@ if __name__ == "__main__":
     count_book = 0
     log_string = ''
     for limit in limit_list:
-        book_name = limit['name']
+        book_name = escape_file_path(limit['name'])
         bool_url = limit['url']
         book_path = thisPath+ '\\' + book_name
         if not os.path.exists(book_name):
@@ -140,12 +161,11 @@ if __name__ == "__main__":
             if os.path.exists(path):
                 if os.path.getsize(path) > 0:
                     print('%s exists continue : %s' % (path,v_url))
-
+                    count_volume += 1
                     continue
             else:
                 volume_name = save_volume(v_url,path).strip().lstrip()
-
-                print('\t\tdownlaod:<%s>:%s : %s' % (v_name,volume_name.encode(sys_code),v_url))
+                print('  downlaod:<%s>:%s : %s' % (book_name.replace('\n', ''),volume_name.decode('utf-8'),v_url))
             count_volume += 1
         count_book += 1
         print("finished book_name = %s" % (book_name))

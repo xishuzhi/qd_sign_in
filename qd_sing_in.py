@@ -158,6 +158,8 @@ x
 //*[@id="alert_box_container_dialog_869"]/table/tbody/tr[2]/td[2]/div/div[3]/text()
 //*[@id="anchorclose_dialog_869"]
 
-
+iedriver = r"F:\temp\IEDriverServer.exe"
+os.environ["webdriver.ie.driver"] = iedriver
+browser = webdriver.Ie(iedriver)
 
 """
