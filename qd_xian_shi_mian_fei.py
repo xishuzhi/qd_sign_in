@@ -181,10 +181,8 @@ def GetLogger(level=logging.INFO):
         log_file = 'qd.log'
         Logger = logging.getLogger('QD')
         Logger.setLevel(level)
-        __logHandler__ = logging.handlers.RotatingFileHandler(log_file,
-                                                              maxBytes=10485760,
-                                                              backupCount=10)
-        __formatter__ = logging.Formatter("%(asctime)s - %(message)s")
+        __logHandler__ = logging.handlers.RotatingFileHandler(log_file,maxBytes=10485760,backupCount=10)
+        __formatter__ = logging.Formatter("%(asctime)s_%(levelname)s:%(message)s")
         __logHandler__.setFormatter(__formatter__)
         Logger.addHandler(__logHandler__)
     return Logger
@@ -244,7 +242,7 @@ if __name__ == "__main__":
             os.mkdir(book_name)
         book_info = get_volume_list(bool_url)
         #print("start book_name = %s,id=%s,url=%s" % (book_name,str(count_book),bool_url))
-        write_log("start book_name = %s,id=%s,url=%s" % (book_name,str(count_book),bool_url))
+        write_log("start book_name = %s,id = %s,url = %s" % (book_name,str(count_book),bool_url))
         count_volume = 0
         for book in book_info:
             v_name = book['name']
