@@ -95,6 +95,7 @@ def checkClick(br):
             try:
                 button_data = br.find_element_by_class_name("plus-items")
                 radios = button_data.find_elements_by_class_name("btn")
+                sing_in_count = 0
                 for bt in radios:
                     print(bt.text)
                     if bt.text == '可领取':
@@ -106,6 +107,8 @@ def checkClick(br):
                         time.sleep(10)
                     if bt.text[0:3] == '经验值':
                         sing_in_count += 1
+                        #print('sing_in_count+1')
+                print('sing_in_count = '+str(sing_in_count))
                 if sing_in_count == 8:
                     browser.get('http://t.qidian.com')
                     time.sleep(10)
