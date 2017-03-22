@@ -18,7 +18,7 @@ SAVE_TYPE_TEXT_WARP_XHTML = 3
 #从免费书列表中获取限免书籍信息
 def get_limit_list():
     fp = request.urlopen("https://f.qidian.com/")
-    html = fp.read();
+    html = fp.read()
     metaSoup = BeautifulSoup(html, "html.parser")
     # print(metaSoup)
     limit_list = metaSoup.find('div', attrs={'id': 'limit-list'})
@@ -48,6 +48,29 @@ def get_html(url,count=0):
     fp.close()
     return html
 #用浏览器打开网页获得源码
+def get_html_by_browserIe(url):
+    thisPath = os.getcwd()
+    iedriver = thisPath + "\\IEDriverServer.exe"
+    html_source = ''
+    if not os.path.exists(iedriver):
+        print("no IEDriverServer")
+    os.environ["webdriver.ie.driver"] = iedriver
+    browser = webdriver.Ie(iedriver)
+    try:
+        browser.get(url)
+        time.sleep(5)
+        html_source = browser.page_source
+        print('open')
+    except:
+        print('wenti')
+        pass
+    finally:
+        browser.quit()
+        print('finally')
+        print(html_source)
+        return html_source
+
+#用浏览器打开网页获得源码
 def get_html_by_browser(url):
     browser = webdriver.Chrome()
     browser.get(url)
@@ -72,7 +95,7 @@ def save_volume(url,filePath,type=SAVE_TYPE_TEXT_NOWARP):
                 f.write(book_info.get_text().encode('utf-8'))
                 if type == SAVE_TYPE_TEXT_NOWARP:
                     f.write(book_data.get_text().encode('utf-8'))
-                if type == SAVE_TYPE_TEXT_WARP:
+                if type == SAVE_TYPE_TEXT_WARP or type == SAVE_TYPE_TEXT_NOWARP_XHTML or type == SAVE_TYPE_TEXT_WARP_XHTML:
                     text = book_data.get_text()
                     text = text.replace('　　', '\n　　')
                     f.write(text.encode('utf-8'))
@@ -81,7 +104,9 @@ def save_volume(url,filePath,type=SAVE_TYPE_TEXT_NOWARP):
             with open(filePath+'.xhtml', 'wb') as fx:
                 if fx:
                     fx.write(book_info.get_text().encode('utf-8'))
-                    fx.write(book_data.encode('utf-8'))
+                    html = book_data.prettify('utf-8')
+                    #html = html.replace('<div class="read-content j_readContent">', '\n').replace('</div>', '')
+                    fx.write(html)
                     fx.close()
     except OSError as err:
         print("OSError:"+err)
@@ -104,10 +129,10 @@ def get_volume_list(url='',count=0):
         elif count==1:
             html = get_html_by_browser(url)
         metaSoup = BeautifulSoup(html, "html.parser")
-        # # 查找章节数量
-        # catalogCount = metaSoup.find('li', attrs={'class': 'j_catalog_block'}).i
-        # count = catalogCount.get_text()
-        # count = count[1:-2]
+        # 查找章节数量
+        catalogCount = metaSoup.find('li', attrs={'class': 'j_catalog_block'}).i
+        v_count = catalogCount.get_text()
+        v_count = v_count[1:-2]
         volume_wrap = metaSoup.findAll('div', attrs={'class': 'volume-wrap'})
         v_list = []
         for li in volume_wrap:
@@ -117,9 +142,10 @@ def get_volume_list(url='',count=0):
                 #print("章节名：%s , 链接：%s" % (i.get_text(),i.a['href']))
                 d = {'name':i.get_text(),'url':'http:'+i.a['href']}
                 v_list.append(d)
-        if len(v_list) == 0 and count == 0:
+        if len(v_list) == 0 or len(v_list) < int(v_count) and count == 0:
             #print("count="+str(count))
             return get_volume_list(url, count + 1)
+
         return v_list
     except:
         print('error url = %s'% url)
@@ -147,7 +173,7 @@ if __name__ == "__main__":
     thisPath = os.getcwd()
     download_type = SAVE_TYPE_TEXT_NOWARP
     config_file_path = thisPath+'\\'+'qd_download_type.config'
-    if(os.path.exists(config_file_path)):
+    if os.path.exists(config_file_path):
         with open(config_file_path) as f:
             data = f.read();
             try:
@@ -163,6 +189,11 @@ if __name__ == "__main__":
                 download_type = SAVE_TYPE_TEXT_NOWARP_XHTML
             elif c == '3':
                 download_type = SAVE_TYPE_TEXT_WARP_XHTML
+    else:
+        s = """#\n#0 下载存为TXT不换行\n#1 下载存为TXT换行\n#2 下载存为TXT不换行，下载存为xhtml\n#3 下载存为TXT换行，下载存为xhtml\ndownload_type = 0"""
+        with open(config_file_path,'w') as f:
+            f.write(s)
+            f.close()
 
     basename = os.path.splitext(os.path.basename(__file__))[0]
 
@@ -185,11 +216,10 @@ if __name__ == "__main__":
             v_name = book['name']
             v_url = book['url']
             path = '%s\\%s_%s.txt' % (book_path,str(count_book),str(count_volume))
-            if os.path.exists(path):
-                if os.path.getsize(path) > 0:
-                    print('%s exists continue : %s' % (path,v_url))
-                    count_volume += 1
-                    continue
+            if os.path.exists(path) and os.path.getsize(path) > 1000:
+                print('%s exists continue : %s' % (path,v_url))
+                count_volume += 1
+                continue
             else:
                 volume_name = save_volume(v_url,path,download_type).strip().lstrip()
                 print('  downlaod:<%s>:%s : %s' % (book_name.replace('\n', ''),volume_name.decode('utf-8'),v_url))
