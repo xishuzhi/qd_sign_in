@@ -119,6 +119,9 @@ def checkClick(br):
                 time.sleep(15)
                 return checkClick(br)
             time.sleep(5)
+        else:
+            print('sleep 600s')
+            time.sleep(600)
         if isNextDay:
             print('next day !')
             #br.refresh()
