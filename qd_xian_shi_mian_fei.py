@@ -6,6 +6,9 @@ import chardet
 import os
 import sys
 import time
+import logging
+from logging import handlers
+import datetime
 sys_code = sys.getfilesystemencoding()
 
 url = "https://f.qidian.com/"
@@ -14,6 +17,8 @@ SAVE_TYPE_TEXT_NOWARP = 0
 SAVE_TYPE_TEXT_WARP = 1
 SAVE_TYPE_TEXT_NOWARP_XHTML = 2
 SAVE_TYPE_TEXT_WARP_XHTML = 3
+
+Logger = None
 
 #从免费书列表中获取限免书籍信息
 def get_limit_list():
@@ -166,8 +171,37 @@ def escape_file_path(path):
     path = path.replace('?', '？')
     return path
 
+
+def GetLogger(level=logging.INFO):
+    '''Set up logging'''
+    global Logger
+    if Logger == None:
+        script_path = os.getcwd()
+        log_path = '%s,%s,%s'% (script_path,os.sep,'qd.log')
+        log_file = 'qd.log'
+        Logger = logging.getLogger('QD')
+        Logger.setLevel(level)
+        __logHandler__ = logging.handlers.RotatingFileHandler(log_file,
+                                                              maxBytes=10485760,
+                                                              backupCount=10)
+        __formatter__ = logging.Formatter("%(asctime)s - %(message)s")
+        __logHandler__.setFormatter(__formatter__)
+        Logger.addHandler(__logHandler__)
+    return Logger
+
+def write_log(text):
+    L = GetLogger()
+    print(text)
+    # if Logger == None:
+    #     basename = os.path.splitext(os.path.basename(__file__))[0]
+    #     logFile = basename + "-" + datetime.datetime.now().strftime("%Y%m%d%H%M%S") + ".log"
+    #     logging.basicConfig(filename=logFile)
+    #     Logger = logging
+    L.info(text)
+
 if __name__ == "__main__":
     #get_html_by_browser("https://book.qidian.com/info/1003383443#Catalog")
+    write_log("start qd_xian_shi_mian_fei.py")
     #获取当前路径
     print(os.getcwd())
     thisPath = os.getcwd()
@@ -209,22 +243,27 @@ if __name__ == "__main__":
         if not os.path.exists(book_name):
             os.mkdir(book_name)
         book_info = get_volume_list(bool_url)
-        print("start book_name = %s,id=%s,url=%s" % (book_name,str(count_book),bool_url))
-
+        #print("start book_name = %s,id=%s,url=%s" % (book_name,str(count_book),bool_url))
+        write_log("start book_name = %s,id=%s,url=%s" % (book_name,str(count_book),bool_url))
         count_volume = 0
         for book in book_info:
             v_name = book['name']
             v_url = book['url']
-            path = '%s\\%s_%s.txt' % (book_path,str(count_book),str(count_volume))
+            #path = '%s\\%s_%s.txt' % (book_path,str(count_book),str(count_volume))
+            path = '%s\\%s.txt' % (book_path,str(count_volume).zfill(5))
             if os.path.exists(path) and os.path.getsize(path) > 1000:
-                print('%s exists continue : %s' % (path,v_url))
+                #print('%s exists continue : %s' % (path,v_url))
+                write_log('%s exists continue : %s' % (path, v_url))
                 count_volume += 1
                 continue
             else:
                 volume_name = save_volume(v_url,path,download_type).strip().lstrip()
-                print('  downlaod:<%s>:%s : %s' % (book_name.replace('\n', ''),volume_name.decode('utf-8'),v_url))
+                #print('  downlaod:<%s>:%s : %s' % (book_name.replace('\n', ''),volume_name.decode('utf-8'),v_url))
+                write_log('  downlaod:<%s>:%s : %s' % (book_name.replace('\n', ''), volume_name.decode('utf-8'), v_url))
             count_volume += 1
         count_book += 1
-        print("finished book_name = %s" % (book_name))
+        #print("finished book_name = %s" % (book_name))
+        write_log("finished book_name = %s" % (book_name))
 
     print('all over !!!')
+    write_log('all over !!!')
