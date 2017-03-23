@@ -10,7 +10,6 @@ ERROR = -1
 NEXT_DAY = 1
 FINISH = 2
 
-
 # 打开起点签到页面函数
 def open_qd(browser):
     url = "http://t.qidian.com/Profile/Score.php"
@@ -49,12 +48,9 @@ def open_new(browser):
     js = 'window.open("http://t.qidian.com/Profile/Score.php");'
     browser.execute_script(js)
     handles = browser.window_handles
-    for handle in handles:  # 切换窗口（切换到搜狗）
+    for handle in handles:  # 切换窗口
         if handle != browser.current_window_handle:
-            print
-            'switch to ', handle
             browser.switch_to_window(handle)
-
             break
 
 # 写错误日志并截图
@@ -69,28 +65,31 @@ def writeLog():
     #s = traceback.format_exc()
     #print(s)
     pass
+def printTime(type):
+    t = datetime.datetime.now().strftime(type)
+    print(t)
+def getTime(type):
+    t = datetime.datetime.now().strftime(type)
+    return t
 
 def checkClick(br):
     url = "http://t.qidian.com/Profile/Score.php"
-    n_t = datetime.datetime.now()
-    data_now = n_t.strftime('%Y-%m-%d %H:%M:%S')
+
+    data_now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print("star time :" + data_now)
-    data_now = n_t.strftime('%d')
+    data_now = datetime.datetime.now().strftime('%d')
     isNextDay = False
     sing_in_count = 0
     while True:
         os.system('cls')
-        try:
-            now = n_t.strftime('%d')
-            this_time = n_t.strftime('%Y-%m-%d %H:%M:%S')
-            print(this_time)
-            if str(data_now) != str(now):
-                data_now = now
-                isNextDay = True
-                br.refresh()
-                time.sleep(15)
-        except:
-            print("time error")
+        now = datetime.datetime.now().strftime('%d')
+        this_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        print(this_time)
+        if str(data_now) != str(now):
+            data_now = now
+            isNextDay = True
+            br.refresh()
+            time.sleep(15)
         if browser.current_url == url:
             try:
                 button_data = br.find_element_by_class_name("plus-items")
@@ -131,7 +130,8 @@ def checkClick(br):
 if __name__ == "__main__":
     browser = webdriver.Chrome()
     start_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    log_str = "start time :%s\n" % start_time
+    # global log_str
+    # log_str = "start time :%s\n" % start_time
     if open_qd(browser):
         checkClick(browser)
     browser.quit()
