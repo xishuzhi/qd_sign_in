@@ -1,4 +1,4 @@
-
+# -*- coding: UTF-8 -*-
 from bs4 import BeautifulSoup
 from urllib import request
 from selenium import webdriver
@@ -137,6 +137,24 @@ def save_volume(url,filePath,type=SAVE_TYPE_TEXT_NOWARP):
     ht = get_html(url)
     # ht = get_html("http://vipreader.qidian.com/chapter/3155120/54155582")
     # print(ht)
+    src_text = """
+    <?xml version="1.0" encoding="utf-8"?>
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+      "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+    <html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+    <title>%s</title>
+    </head>
+    <body>
+    <h1>%s</h1>
+    <div>
+    %s
+    </div>
+    <div><br/></div>
+    </body>
+    </html>
+    """
     try:
         metaSoup = BeautifulSoup(ht, "html.parser")
         book_info = metaSoup.find('div', attrs={'class': 'text-wrap'}).find('h3', attrs={'class': 'j_chapterName'})
@@ -157,10 +175,14 @@ def save_volume(url,filePath,type=SAVE_TYPE_TEXT_NOWARP):
         if type == SAVE_TYPE_TEXT_NOWARP_XHTML or type == SAVE_TYPE_TEXT_WARP_XHTML:
             with open(filePath+'.xhtml', 'wb') as fx:
                 if fx:
-                    fx.write(volume_name)
-                    html = book_data.prettify('utf-8')
-                    #html = html.replace('<div class="read-content j_readContent">', '\n').replace('</div>', '')
-                    fx.write(html)
+                    # fx.write(volume_name)
+                    html = str(book_data.prettify())
+                    # fx.write(html)
+                    v_n = volume_name.decode('utf-8')
+                    v_n = replace_title(v_n)
+                    newFile = src_text % (v_n, v_n, html)
+                    #print(newFile)
+                    fx.write(newFile.encode('utf-8'))
                     fx.close()
     except OSError as err:
         print("OSError:"+err)
@@ -233,9 +255,16 @@ def make_dict(s_in,s_out):
             else:
                 d.update(str.maketrans(s_in[i], ''))
     return d
-#替换字符串
+#替换字符串，路径或文件名
 def replace_text(text):
     t = make_dict('１２３４５６７８９０，．！？/\\*?!\n', '1234567890，。！？___？！ ')
+    text = text.translate(t)
+    text = text.strip()
+    text = text.lstrip()
+    return text
+#替换标题不用做路径和文件名
+def replace_title(text):
+    t = make_dict('１２３４５６７８９０，．！?!\n', '1234567890，。！？！ ')
     text = text.translate(t)
     text = text.strip()
     text = text.lstrip()
@@ -392,9 +421,7 @@ def main(argv):
     if len(book_id) > 0:
         for id in book_id:
             if len(id) > 0:
-                l = get_book_by_id(id)
-                for i in l:
-                    limit_list.append(i)
+                limit_list.append(get_book_by_id(id)[0])
     else:
         # 获取所有限免书籍列表
         limit_list = get_limit_list()
