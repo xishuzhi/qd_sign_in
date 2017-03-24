@@ -5,6 +5,7 @@ from selenium import webdriver
 import chardet
 import os
 import sys
+import getopt
 import time
 import logging
 from logging import handlers
@@ -313,7 +314,46 @@ def save_by_volume(book_volume,book_name='',download_path='',download_type=SAVE_
     return log_string
 
 #main
-def main(book_id = 0):
+def main(argv):
+    book_id = []
+    basename = os.path.splitext(os.path.basename(__file__))[0]
+    try:
+        opts, args = getopt.getopt(argv, "hi:f", ["id=,list="])
+    except getopt.GetoptError:
+        print('%s.py -i <id>' % basename)
+        sys.exit(2)
+    for opt, arg in opts:
+        if opt == '-h':
+            print('%s.py -i <id>' % basename)
+            sys.exit()
+        elif opt == 'f':
+            print('download all Limited-time free book : https://f.qidian.com/')
+        elif opt in ("-i", "--id"):
+            book_id = arg
+        elif opt in ("-f", "--list"):
+            filename = arg
+            try:
+                if os.path.exists(filename):
+                    with open(filename, 'r') as f:
+                        for line in f.readlines():
+                            if len(line) > 0 and line[0] != '#' or line[0] != '\\\\':
+                                book_id.append(replace_text(line))
+                elif os.path.exists('list.txt'):
+                    with open('list.txt', 'r') as f:
+                        for line in f.readlines():
+                            if len(line) > 0 and line[0] != '#' or line[0] != '\\\\':
+                                book_id.append(replace_text(line))
+                else:
+                    print('open list.txt failed!')
+                    sys.exit(2)
+            except:
+                print('open list.txt failed! error!!')
+                sys.exit(2)
+        else:
+            print('%s.py -h for help' % basename)
+            sys.exit()
+
+
     write_log("start qd_xian_shi_mian_fei.py")
     # 获取当前路径
     print(os.getcwd())
@@ -348,13 +388,19 @@ def main(book_id = 0):
         with open(config_file_path, 'w') as f:
             f.write(s)
             f.close()
-    if book_id > 0:
-        limit_list = get_book_by_id(book_id)
+    limit_list = []
+    if len(book_id) > 0:
+        for id in book_id:
+            if len(id) > 0:
+                l = get_book_by_id(id)
+                for i in l:
+                    limit_list.append(i)
     else:
         # 获取所有限免书籍列表
         limit_list = get_limit_list()
     for limit in limit_list:
-        book_name = escape_file_path(limit['name'])
+        print(limit)
+        book_name = replace_text(limit['name'])
         bool_url = limit['url']
         book_path = thisPath + '\\' + book_name
         if not os.path.exists(book_name):
@@ -368,5 +414,60 @@ def main(book_id = 0):
         write_log(result)
         write_log("finished book_name = %s" % (book_name))
 
+# def main(book_id = 0):
+#     write_log("start qd_xian_shi_mian_fei.py")
+#     # 获取当前路径
+#     print(os.getcwd())
+#     thisPath = os.getcwd()
+#     download_type = SAVE_TYPE_TEXT_NOWARP
+#     config_file_path = thisPath + '\\' + 'qd_download_type.config'
+#     if os.path.exists(config_file_path):
+#         with open(config_file_path) as f:
+#             try:
+#                 data = f.read();
+#                 # data_list = data.split('\n')
+#                 # for line in data_list:
+#                 #     text = line
+#                 #     text =  text.strip().lstrip()
+#                 #     if text.startswith('#') or len(line) < 1:
+#                 #         continue
+#                 #     elif text.startswith('download_type')
+#                 data = data[data.find('download_type'):]
+#             except:
+#                 print('config file error !!')
+#             c = data.split('=')[1].strip().lstrip()
+#             if c == '0':
+#                 download_type = SAVE_TYPE_TEXT_NOWARP
+#             elif c == '1':
+#                 download_type = SAVE_TYPE_TEXT_WARP
+#             elif c == '2':
+#                 download_type = SAVE_TYPE_TEXT_NOWARP_XHTML
+#             elif c == '3':
+#                 download_type = SAVE_TYPE_TEXT_WARP_XHTML
+#     else:
+#         s = """#\n#0 下载存为TXT不换行\n#1 下载存为TXT换行\n#2 下载存为TXT不换行，下载存为xhtml\n#3 下载存为TXT换行，下载存为xhtml\ndownload_type = 0\n[BOOK_ID_LIST]\n"""
+#         with open(config_file_path, 'w') as f:
+#             f.write(s)
+#             f.close()
+#     if book_id > 0:
+#         limit_list = get_book_by_id(book_id)
+#     else:
+#         # 获取所有限免书籍列表
+#         limit_list = get_limit_list()
+#     for limit in limit_list:
+#         book_name = escape_file_path(limit['name'])
+#         bool_url = limit['url']
+#         book_path = thisPath + '\\' + book_name
+#         if not os.path.exists(book_name):
+#             os.mkdir(book_name)
+#         book_info,book_volume = get_volume_list(bool_url)
+#         #print(book_volume)
+#         # print("start book_name = %s,id=%s,url=%s" % (book_name,str(count_book),bool_url))
+#         write_log("start book_name = %s,id = %s,url = %s" % (book_name, str(1), bool_url))
+#         result = save_by_volume(book_volume,book_name,book_path, download_type)
+#         # print("finished book_name = %s" % (book_name))
+#         write_log(result)
+#         write_log("finished book_name = %s" % (book_name))
+
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])
