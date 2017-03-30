@@ -78,15 +78,16 @@ def main():
                 while True:
                     s = input('是否合并？（y/n）')
                     if s == 'y':
-                        with open(n+'.txt','w') as f:
-                            for i in l:
-                                if os.path.exists(i):
-                                    with open(i,'r') as a:
-                                        f.write(a.read())
-                                        f.write('\n')
-                                        f.write('\n')
-                                        a.close()
-                            f.close()
+                        join_text(n,l)
+                        # with open(n+'.txt','w') as f:
+                        #     for i in l:
+                        #         if os.path.exists(i):
+                        #             with open(i,'r') as a:
+                        #                 f.write(a.read())
+                        #                 f.write('\n')
+                        #                 f.write('\n')
+                        #                 a.close()
+                        #     f.close()
                         print('合并完成')
                         break
                     else:
@@ -96,8 +97,9 @@ def main():
             elif selection == 'f' or selection == 'F':
                 xm = get_limit_list()
                 for i in xm:
-                    start(i['id'])
-                break
+                    n,l = start(i['id'])
+                    join_text(n+'.txt',l)
+                breakf
             elif selection == 'x' or selection == 'X':
                 break
             else:
@@ -171,6 +173,19 @@ def start(id = 0):
         f.close()
     print('下载《%s》完成' % book_name)
     return book_name , all_book_list
+def join_text(name,file_list):
+    try:
+        with open(name, 'w') as f:
+            for i in file_list:
+                if os.path.exists(i):
+                    with open(i, 'r') as a:
+                        f.write(a.read())
+                        f.write('\n')
+                        f.write('\n')
+                        a.close()
+            f.close()
+    except:
+        pass
 
 from bs4 import  BeautifulSoup
 #从免费书列表中获取限免书籍信息
