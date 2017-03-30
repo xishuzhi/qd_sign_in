@@ -12,12 +12,15 @@ from logging import handlers
 import datetime
 sys_code = sys.getfilesystemencoding()
 
+#import qd_QDReader
+
 url = "https://f.qidian.com/"
 
 SAVE_TYPE_TEXT_NOWARP = 0
 SAVE_TYPE_TEXT_WARP = 1
 SAVE_TYPE_TEXT_NOWARP_XHTML = 2
 SAVE_TYPE_TEXT_WARP_XHTML = 3
+SAVE_TYPE_QDTEXT = 4
 
 Logger = None
 
@@ -414,6 +417,9 @@ def main(argv):
                 download_type = SAVE_TYPE_TEXT_NOWARP_XHTML
             elif c == '3':
                 download_type = SAVE_TYPE_TEXT_WARP_XHTML
+            elif c == '4':
+                download_type = SAVE_TYPE_QDTEXT
+
     else:
         s = """#\n#0 下载存为TXT不换行\n#1 下载存为TXT换行\n#2 下载存为TXT不换行，下载存为xhtml\n#3 下载存为TXT换行，下载存为xhtml\ndownload_type = 0\n[BOOK_ID_LIST]\n"""
         with open(config_file_path, 'w') as f:

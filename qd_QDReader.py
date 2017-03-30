@@ -60,16 +60,44 @@ def menu():
     #os.popen('cls')
     #os.system('cls')
     print ('输入书籍ID下载：')
+    print('输f下载当前限免书籍：')
     print ('x. 退出')
     selection = input('输入书籍ID：')
     return selection
-
+def process(path):
+    for f in os.listdir(path):
+        fin = open(path+"/"+f,"r")
+        #print(fin.read())
+        fin.close()
 def main():
     try:
         while True:
             selection = menu()
             if selection.isdigit() and int(selection) > 0:
-                start(selection)
+                n,l = start(selection)
+                while True:
+                    s = input('是否合并？（y/n）')
+                    if s == 'y':
+                        with open(n+'.txt','w') as f:
+                            for i in l:
+                                if os.path.exists(i):
+                                    with open(i,'r') as a:
+                                        f.write(a.read())
+                                        f.write('\n')
+                                        f.write('\n')
+                                        a.close()
+                            f.close()
+                        print('合并完成')
+                        break
+                    else:
+                        print('取消合并')
+                        break
+
+            elif selection == 'f' or selection == 'F':
+                xm = get_limit_list()
+                for i in xm:
+                    start(i['id'])
+                break
             elif selection == 'x' or selection == 'X':
                 break
             else:
@@ -100,6 +128,7 @@ def start(id = 0):
             chapters_list.append({'name':chapters_name, 'id':chapters_id})
             #print("name:%s,id=%s" % (chapters_name, chapters_id))
     book_path = thisPath + '\\' + book_name
+    all_book_list = []
     if not os.path.exists(book_name):
         os.mkdir(book_name)
     chapters_count = 0
@@ -109,6 +138,7 @@ def start(id = 0):
         c = l['id']
         cn = "C_%s.txt" % (str(chapters_count).zfill(5))
         p = "%s\\%s" % (book_path,cn)
+        all_book_list.append(p)
         if os.path.exists(p) and os.path.getsize(p) > 100:
             out_put += '[P]%s\t(%s)\t%s size=%s\n' % (n, c, cn,os.path.getsize(p))
             pass
@@ -140,6 +170,28 @@ def start(id = 0):
         f.write(out_put)
         f.close()
     print('下载《%s》完成' % book_name)
+    return book_name , all_book_list
+
+from bs4 import  BeautifulSoup
+#从免费书列表中获取限免书籍信息
+def get_limit_list():
+    fp = request.urlopen("https://f.qidian.com/")
+    html = fp.read()
+    metaSoup = BeautifulSoup(html, "html.parser")
+    # print(metaSoup)
+    limit_list = metaSoup.find('div', attrs={'id': 'limit-list'})
+    # print(limit_list)
+    book_info_list = limit_list.findAll('div', attrs={'class': 'book-mid-info'})
+    book = []
+    for i in book_info_list:
+        id_link = i.h4.a['href']
+        id = id_link.split('/')[-1]
+        #print(id_link.split('/')[-1])
+        data = {'name':i.h4.get_text(),'url':'http:' + id_link+"#Catalog",'id':id}
+        book.append(data)
+    #print(book)
+    return book
 
 if __name__ == '__main__':
     main()
+
