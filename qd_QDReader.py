@@ -1,11 +1,11 @@
 import urllib
+from urllib import request
 import gzip
 import json
 import os
 
 #获取书籍信息和目录的JSON
 def getBookInfoData(bookID):
-    #url = 'http://4g.if.qidian.com/Atom.axd/Api/Book/GetChapterList?BookId=1004904932'
     url = 'http://4g.if.qidian.com/Atom.axd/Api/Book/GetChapterList?BookId=%s' % bookID
     request = urllib.request.Request(url)
     request.add_header('Accept-encoding', 'gzip')
@@ -23,7 +23,6 @@ def getBookInfoData(bookID):
 
 
 def getTextData(bookID,ChepterID):
-    #url = 'http://4g.if.qidian.com/Atom.axd/Api/Book/GetContent?BookId=1005194988&ChapterId=359203280'
     url = 'http://4g.if.qidian.com/Atom.axd/Api/Book/GetContent?BookId=%s&ChapterId=%s' % (bookID,ChepterID)
     request = urllib.request.Request(url)
     request.add_header('Accept-encoding', 'gzip')
@@ -35,7 +34,7 @@ def getTextData(bookID,ChepterID):
     return html
 
 def loadData(url):
-    url = 'http://4g.if.qidian.com/Atom.axd/Api/Book/GetContent?BookId=1005194988&ChapterId=359203280'
+    url = 'http://4g.if.qidian.com/Atom.axd/Api/Book/GetContent?BookId=1005194988&ChapterId=1005194988'
     request = urllib.request.Request(url)
     request.add_header('Accept-encoding', 'gzip')
     request.add_header('User-Agent', 'Mozilla QDReaderAndroid/6.2.0/232/qidian/000000000000000')
@@ -51,6 +50,11 @@ def loadData(url):
 
     return html
 
+#替换字符串
+def escape_file_path(path):
+    path = path.replace('\\r\\n', '\n')
+    return path
+
 def menu():
     #os.popen('cls')
     #os.system('cls')
@@ -63,15 +67,17 @@ def main():
     try:
         while True:
             selection = menu()
-            if selection.isdigit() and selection > 0:
-                getTextData(selection)
+            if selection.isdigit() and int(selection) > 0:
+                start(selection)
             elif selection == 'x' or selection == 'X':
                 break
+            else:
+                print('输入错误！')
         print ('exit')
     except Exception as e:
         print ('Error: %s,%s' % (selection,e))
     pass
-def start(id = 1005194988):
+def start(id = 0):
     thisPath = os.getcwd()
     book_ID = id
     print('开始下载:%s' % book_ID)
@@ -114,7 +120,7 @@ def start(id = 1005194988):
                     f.write('\n')
                     f.write(t)
                     f.close()
-                out_put += '[D]%\t(%s)\t%s\n' % (n, c, cn)
+                out_put += '[D]%s\t(%s)\t%s\n' % (n, c, cn)
             else:
                 out_put += '[E]%s\t(%s)\t%s\n' % (n, c, cn)
         chapters_count += 1
