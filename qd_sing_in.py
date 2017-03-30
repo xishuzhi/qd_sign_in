@@ -90,7 +90,7 @@ def checkClick(br):
             isNextDay = True
             br.refresh()
             time.sleep(15)
-        if browser.current_url == url:
+        if br.current_url == url:
             try:
                 button_data = br.find_element_by_class_name("plus-items")
                 radios = button_data.find_elements_by_class_name("btn")
@@ -101,16 +101,20 @@ def checkClick(br):
                         print("点击")
                         bt.click()
                         isNextDay = False
-                        time.sleep(5)
-                        br.refresh()
-                        time.sleep(10)
+                        #time.sleep(5)
+                        br.implicitly_wait(5)
+                        br.maximize_window()
+                        #br.refresh()
+                        br.get(url)
+                        #time.sleep(10)
+                        br.implicitly_wait(10)
+                        br.
                     if bt.text[0:3] == '经验值':
                         sing_in_count += 1
                         #print('sing_in_count+1')
                 print('sing_in_count = '+str(sing_in_count))
                 if sing_in_count == 8:
-                    browser.get('http://t.qidian.com')
-                    time.sleep(10)
+                    br.get('http://t.qidian.com')
             except:
                 writeLog()
                 print("............")

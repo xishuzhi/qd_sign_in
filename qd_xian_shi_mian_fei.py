@@ -157,8 +157,10 @@ def save_volume(url,filePath,type=SAVE_TYPE_TEXT_NOWARP):
     """
     try:
         metaSoup = BeautifulSoup(ht, "html.parser")
-        book_info = metaSoup.find('div', attrs={'class': 'text-wrap'}).find('h3', attrs={'class': 'j_chapterName'})
+        #book_info = metaSoup.find('div', attrs={'class': 'main-text-wrap'}).find('h3', attrs={'class': 'j_chapterName'})
+        book_info = metaSoup.find('h3', attrs={'class': 'j_chapterName'})
         book_data = metaSoup.find('div', attrs={'class': 'read-content j_readContent'})
+        #print(ht)
         #print(book_info.get_text())
         #print(book_data.get_text())
         with open(filePath, 'wb') as f:
@@ -438,7 +440,7 @@ def main(argv):
         write_log("start book_name = %s,id = %s,url = %s" % (book_name, str(1), bool_url))
         result = save_by_volume(book_volume,book_name,book_path, download_type)
         # print("finished book_name = %s" % (book_name))
-        write_log(result)
+        #write_log(result)
         write_log("finished book_name = %s" % (book_name))
 
 # def main(book_id = 0):
