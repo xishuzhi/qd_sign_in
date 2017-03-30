@@ -108,7 +108,7 @@ def checkClick(br):
                         br.get(url)
                         #time.sleep(10)
                         br.implicitly_wait(10)
-                        br.
+                        #br.
                     if bt.text[0:3] == '经验值':
                         sing_in_count += 1
                         #print('sing_in_count+1')
