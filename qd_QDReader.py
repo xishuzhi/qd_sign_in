@@ -51,8 +51,9 @@ def loadData(url):
     return html
 
 #替换字符串
-def escape_file_path(path):
-    path = path.replace('\\r\\n', '\n')
+def replace_text(path):
+    path = path.replace('\\r', '\r')
+    path = path.replace('\\n', '\n')
     return path
 
 def menu():
@@ -83,21 +84,21 @@ def start(id = 0):
     print('开始下载:%s' % book_ID)
     book_info_string = getBookInfoData(book_ID)
     book_info_json = json.loads(book_info_string)
-    print(book_info_json)
+    #print(book_info_json)
     book_info_data = book_info_json['Data']
     book_name = book_info_data['BookName']
     book_author = book_info_data['Author']
     book_chapters = book_info_data['Chapters']
     print(book_name)
     print(book_author)
-    print(book_chapters)
+    print(len(book_chapters))
     chapters_list = []
     for i in book_chapters:
         if i['v'] == 0:
             chapters_name = i['n']
             chapters_id = i['c']
             chapters_list.append({'name':chapters_name, 'id':chapters_id})
-            print("name:%s,id=%s" % (chapters_name, chapters_id))
+            #print("name:%s,id=%s" % (chapters_name, chapters_id))
     book_path = thisPath + '\\' + book_name
     if not os.path.exists(book_name):
         os.mkdir(book_name)
@@ -109,16 +110,26 @@ def start(id = 0):
         cn = "C_%s.txt" % (str(chapters_count).zfill(5))
         p = "%s\\%s" % (book_path,cn)
         if os.path.exists(p) and os.path.getsize(p) > 100:
-            out_put += '[P]%s\t(%s)\t%s\n' % (n, c, cn)
+            out_put += '[P]%s\t(%s)\t%s size=%s\n' % (n, c, cn,os.path.getsize(p))
             pass
         else:
             t = getTextData(book_ID, c)
             t_json = json.loads(t)
-            if t_json['Message'] == '成功':
+            if t_json['Message'] == '成功' and chapters_count > 0:
                 with open(p, 'w') as f:
                     f.write(n)
                     f.write('\n')
-                    f.write(t)
+                    if chapters_count == 0:
+                        pass
+                        # bq = t_json['Data']
+                        # print(type(bq[i]))
+                        # for i in bq:
+                        #     if type(bq[i]) == 'str' or type(bq[i]) == 'int':
+                        #         f.write(str(bq[i]))
+                        #         f.write('\n')
+                        #         print(bq[i])
+                    else:
+                        f.write(replace_text(t_json['Data']))
                     f.close()
                 out_put += '[D]%s\t(%s)\t%s\n' % (n, c, cn)
             else:
