@@ -31,7 +31,10 @@ def getTextData(bookID,ChepterID):
     data = response.read()
     html = gzip.decompress(data).decode("utf-8")
     #print(html)
-    return html
+    result = json.loads(html)
+    if(result['Message']) == '失败':
+        print("error:%s" % url)
+    return result
 
 def loadData(url):
     url = 'http://4g.if.qidian.com/Atom.axd/Api/Book/GetContent?BookId=1005194988&ChapterId=1005194988'
@@ -97,9 +100,9 @@ def main():
             elif selection == 'f' or selection == 'F':
                 xm = get_limit_list()
                 for i in xm:
-                    n,l = start(i['id'])
+                    n,l = start(i['id'],True)
                     join_text(n+'.txt',l)
-                breakf
+                break
             elif selection == 'x' or selection == 'X':
                 break
             else:
@@ -108,7 +111,7 @@ def main():
     except Exception as e:
         print ('Error: %s,%s' % (selection,e))
     pass
-def start(id = 0):
+def start(id = 0,isVIP = False):
     thisPath = os.getcwd()
     book_ID = id
     print('开始下载:%s' % book_ID)
@@ -143,13 +146,16 @@ def start(id = 0):
         all_book_list.append(p)
         if os.path.exists(p) and os.path.getsize(p) > 100:
             out_put += '[P]%s\t(%s)\t%s size=%s\n' % (n, c, cn,os.path.getsize(p))
+            print('[P]download %s,%s' % (n,cn))
             pass
         else:
-            t = getTextData(book_ID, c)
-            t_json = json.loads(t)
+            t_json = getTextData(book_ID, c)
+            #t_json = json.loads(t)
             if t_json['Message'] == '成功' and chapters_count > 0:
+                print('[D]download %s,%s' % (n,cn))
                 with open(p, 'w') as f:
                     f.write(n)
+                    f.write('\n')
                     f.write('\n')
                     if chapters_count == 0:
                         pass
