@@ -20,16 +20,22 @@ def getByJson(id):
         return json_data,html_bytes
     except error.URLError as e:
         print(e.reason)
+    finally:
+        response.close()
+
 def getBookInfoList(json_data):
     l = []
-    for i in json_data['data']['vs']:
-        # print(i)
-        for j in i['cs']:
-            #print(j)
-            cN = j['cN']
-            cU = j['cU']
-            uuid = j['uuid']
-            l.append({'name': cN, 'url': cU, 'uuid':uuid})
+    if json_data["msg"] == 'suc':
+        for i in json_data['data']['vs']:
+            # print(i)
+            for j in i['cs']:
+                #print(j)
+                cN = j['cN']
+                cU = j['cU']
+                sS = j['sS']
+                uuid = j['uuid']
+                #章节名，连接ID，章节ID，是否vip，ss=1公众，ss=0vip
+                l.append({'name': cN, 'url': cU, 'uuid':uuid,'ss':sS})
     return l
 
 #从免费书列表中获取限免书籍信息
@@ -48,9 +54,55 @@ def get_limit_list():
     print(book)
     return book
 
+#打开链接获取页面源码
+def get_html(url,count=0):
+    try:
+        fp = request.urlopen(url)
+        html = fp.read()  # python3.x read the html as html code bytearray
+    except Exception as e:
+        print(e)
+        print('页面打开失败：[%s]' % url)
+        if(count > 5):
+            return '404'
+        return get_html(url,count+1)
+    html = html.decode('utf-8')
+    fp.close()
+    return html
 
+#保存章节和内容到文件,ytpe 为保存方式
+def save_volume(url,filePath):
+    ht = get_html(url)
+    # ht = get_html("http://vipreader.qidian.com/chapter/3155120/54155582")
+    #https://read.qidian.com/chapter/fK6nzWkljR_7X4qr8VpWrA2/4w8ipvOnxsVMs5iq0oQwLQ2
+    #https://vipreader.qidian.com/chapter/1001730574/307157910
+    # print(ht)
+    try:
+        metaSoup = BeautifulSoup(ht, "html.parser")
+        book_info = metaSoup.find('h3', attrs={'class': 'j_chapterName'})
+        book_data = metaSoup.find('div', attrs={'class': 'read-content j_readContent'})
+        #print(ht)
+        #print(book_info.get_text())
+        #print(book_data.get_text())
+        with open(filePath, 'wb') as f:
+            if f:
+                volume_name = book_info.get_text().encode('utf-8')
+                text = book_data.get_text()
+                f.write(volume_name)
+                f.write(text.encode('utf-8'))
+                text = text.replace('　　', '\n　　')
+                f.write(text.encode('utf-8'))
+                f.close()
 
-
+    except OSError as err:
+        print("OSError:"+err)
+    except IOError as err:
+        print("IOError:" + err)
+    except Exception as err:
+        print("Exception:" + err)
+    except:
+        print("except error")
+    finally:
+        return book_info.get_text().encode('utf-8')
 
 
 if __name__ == '__main__':
