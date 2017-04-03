@@ -9,7 +9,8 @@ def getByJson(id):
         req.add_header('Accept-encoding', 'gzip, deflate, sdch, br')
         req.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3033.0 Safari/537.36')
         req.add_header('Accept-Language', 'zh-CN,zh;q=0.8')
-        req.add_header('Cookie', 'stat_gid=8466091309; nread=2; nb=2; ns=2; _csrfToken=3nzlXYWwxZjUJPmUZyX8x0Zed1EBaizVQaOfPrwi; qdgd=1; statisticUUID=1488351430_34765; newstatisticUUID=1489378491_236948254; qdrs=0|2|2|1|1; lrbc=3536156%7C84866158%7C0%2C1003383443%7C316603456%7C1%2C3605783%7C95097080%7C1; rcr=3536156%2C1003383443%2C3605783%2C1004289255%2C3155120%2C1005007573%2C1003807527%2C1004166084%2C2782032%2C1005194988%2C1002959239%2C1004821729%2C1005001441%2C1005049162; hiijack=0; al=1; stat_sessid=19612237024; e1=%7B%22pid%22%3A%22qd_P_limitfree%22%2C%22eid%22%3A%22qd_E05%22%2C%22l1%22%3A5%7D; e2=%7B%22pid%22%3A%22qd_P_limitfree%22%2C%22eid%22%3A%22%22%2C%22l1%22%3A5%7D; ywkey=yw3894070335; ywguid=800001933406')
+        #req.add_header('Cookie', 'stat_gid=8466091309; nread=2; nb=2; ns=2; _csrfToken=3nzlXYWwxZjUJPmUZyX8x0Zed1EBaizVQaOfPrwi; qdgd=1; statisticUUID=1488351430_34765; newstatisticUUID=1489378491_236948254; qdrs=0|2|2|1|1; lrbc=3536156%7C84866158%7C0%2C1003383443%7C316603456%7C1%2C3605783%7C95097080%7C1; rcr=3536156%2C1003383443%2C3605783%2C1004289255%2C3155120%2C1005007573%2C1003807527%2C1004166084%2C2782032%2C1005194988%2C1002959239%2C1004821729%2C1005001441%2C1005049162; hiijack=0; al=1; stat_sessid=19612237024; e1=%7B%22pid%22%3A%22qd_P_limitfree%22%2C%22eid%22%3A%22qd_E05%22%2C%22l1%22%3A5%7D; e2=%7B%22pid%22%3A%22qd_P_limitfree%22%2C%22eid%22%3A%22%22%2C%22l1%22%3A5%7D; ywkey=yw3894070335; ywguid=800001933406')
+        req.add_header('Cookie','_csrfToken=3nzlXYWwxZjUJPmUZyX8x0Zed1EBaizVQaOfPrwi;')
         req.add_header('X-Requested-With', 'XMLHttpRequest')
         req.add_header('Accept', 'application/json, text/javascript, */*; q=0.01')
         req.add_header('Host', 'book.qidian.com')
@@ -43,15 +44,12 @@ def get_limit_list():
     fp = request.urlopen("https://f.qidian.com/")
     html = fp.read()
     metaSoup = BeautifulSoup(html, "html.parser")
-    # print(metaSoup)
-    limit_list = metaSoup.find('div', attrs={'id': 'limit-list'})
-    # print(limit_list)
-    book_info_list = limit_list.findAll('div', attrs={'class': 'book-mid-info'})
+    book_info_list = metaSoup.findAll('div', attrs={'class': 'book-mid-info'})
     book = []
     for i in book_info_list:
-        data = {'name':i.h4.get_text(),'url':'http:' + i.h4.a['href']+"#Catalog"}
+        data = {'name':i.h4.get_text(),'url':'http:' + i.h4.a['href']+"#Catalog",'id':i.h4.a['data-bid']}
         book.append(data)
-    print(book)
+    #print(book)
     return book
 
 #打开链接获取页面源码
@@ -93,39 +91,121 @@ def save_volume(url,filePath):
                 f.write(text.encode('utf-8'))
                 f.close()
 
-    except OSError as err:
-        print("OSError:"+err)
-    except IOError as err:
-        print("IOError:" + err)
-    except Exception as err:
-        print("Exception:" + err)
+    # except OSError as err:
+    #     print("OSError:"+err)
+    # except IOError as err:
+    #     print("IOError:" + err)
+    # except Exception as err:
+    #     print("Exception:" + err)
     except:
         print("except error")
-    finally:
-        return book_info.get_text().encode('utf-8')
+    # finally:
+    #     return book_info.get_text().encode('utf-8')
 def path_win(path):
     path =  path.replace('/', '\\')
-    if path[:-1] != '\\':
-        path += '\\'
+    # if path[:-1] != '\\':
+    #     path += '\\'
+    if path[:-1] == '\\':
+        path = path[0:-1]
     return path
 def path_linux(path):
     path =  path.replace('\\', '/')
-    if path[:-1] != '/':
-        path += '/'
+    # if path[:-1] != '/':
+    #     path += '/'
+    if path[:-1] == '/':
+        path = path[0:-1]
     return path
-def main():
+def path_format(path):
+    if os.name == 'nt':
+        path = path_win(path)
+    elif os.name == 'Android':
+        path = path_linux(path)
+    return path
+def main_test():
     url_n = 'http://read.qidian.com/chapter/'
-    url_v = 'http://vipreader.qidian.com/chapter'
+    url_v = 'http://vipreader.qidian.com/chapter/'
     if os.name == 'nt':
         thisPath = os.getcwd()
     elif os.name == 'Android':
         thisPath = '/storage/emulated/0/qpython/scripts3'
+    book_list = get_limit_list()
+    for book_info in book_list:
+        book_name = book_info['name']
+        book_id = book_info['id']
+        j,d = getByJson(book_id)
+        j_json= getBookInfoList(j)
+        book_dir = path_format(thisPath + '/' + book_name)
+        if not os.path.exists(book_dir):
+            os.mkdir(book_dir)
+        try:
+            with open(path_format(book_dir+'/book_info.txt'),'wb') as f:
+                f.write(d)
+                f.close()
+        except:
+            pass
+
+        for i in j_json:
+            name = i['name']
+            url = i['url']
+            ss = i['ss']
+            uuid = i['uuid']
+            d_name = str(uuid) + '.txt'
+            d_path = path_format(book_dir + '/' + d_name)
+            d_url = ''
+            if ss == 0:
+                #d_url = d_url % (url_v,url)
+                d_url = 'http://vipreader.qidian.com/chapter/%s'% url
+                save_volume(d_url, d_path)
+            elif ss == 1:
+                #d_url = d_url % (url_n,url)
+                d_url = 'http://read.qidian.com/chapter/%s'% url
+            print(d_url)
+            #save_volume(d_url, d_path)
+
+
+def main():
+    if os.name == 'nt':
+        thisPath = os.getcwd()
+    elif os.name == 'Android':
+        thisPath = '/storage/emulated/0/qpython/scripts3'
+    book_list = get_limit_list()
+    for book_info in book_list:
+        book_name = book_info['name']
+        book_id = book_info['id']
+        j,d = getByJson(book_id)
+        j_json= getBookInfoList(j)
+        book_dir = path_format(thisPath + '/' + book_name)
+        if not os.path.exists(book_dir):
+            os.mkdir(book_dir)
+        try:
+            with open(path_format(book_dir+'/book_info.txt'),'wb') as f:
+                f.write(d)
+                f.close()
+        except:
+            pass
+
+        for i in j_json:
+            name = i['name']
+            url = i['url']
+            ss = i['ss']
+            uuid = i['uuid']
+            d_name = str(uuid) + '.txt'
+            d_path = path_format(book_dir + '/' + d_name)
+            d_url = ''
+            if ss == 0:
+                #d_url = d_url % (url_v,url)
+                d_url = 'http://vipreader.qidian.com/chapter/%s'% url
+                save_volume(d_url, d_path)
+            elif ss == 1:
+                #d_url = d_url % (url_n,url)
+                d_url = 'http://read.qidian.com/chapter/%s'% url
+            print(d_url)
+            #save_volume(d_url, d_path)
+
+
 
 
 
 if __name__ == '__main__':
     print(os.name)
-    #main()
-    #pass
-    #j = getByJson(980)
-    #print(j)
+    main()

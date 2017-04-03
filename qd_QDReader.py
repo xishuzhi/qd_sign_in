@@ -82,15 +82,6 @@ def main():
                     s = input('是否合并？（y/n）')
                     if s == 'y':
                         join_text(n,l)
-                        # with open(n+'.txt','w') as f:
-                        #     for i in l:
-                        #         if os.path.exists(i):
-                        #             with open(i,'r') as a:
-                        #                 f.write(a.read())
-                        #                 f.write('\n')
-                        #                 f.write('\n')
-                        #                 a.close()
-                        #     f.close()
                         print('合并完成')
                         break
                     else:
@@ -159,13 +150,6 @@ def start(id = 0,isVIP = False):
                     f.write('\n')
                     if chapters_count == 0:
                         pass
-                        # bq = t_json['Data']
-                        # print(type(bq[i]))
-                        # for i in bq:
-                        #     if type(bq[i]) == 'str' or type(bq[i]) == 'int':
-                        #         f.write(str(bq[i]))
-                        #         f.write('\n')
-                        #         print(bq[i])
                     else:
                         f.write(replace_text(t_json['Data']))
                     f.close()
