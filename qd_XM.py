@@ -1,7 +1,7 @@
 import json
 from urllib import error,request
 from bs4 import BeautifulSoup
-
+import os
 def getByJson(id):
     try:
         url = 'https://book.qidian.com/ajax/book/category?_csrfToken=3nzlXYWwxZjUJPmUZyX8x0Zed1EBaizVQaOfPrwi&bookId=%s ' % id
@@ -103,8 +103,29 @@ def save_volume(url,filePath):
         print("except error")
     finally:
         return book_info.get_text().encode('utf-8')
+def path_win(path):
+    path =  path.replace('/', '\\')
+    if path[:-1] != '\\':
+        path += '\\'
+    return path
+def path_linux(path):
+    path =  path.replace('\\', '/')
+    if path[:-1] != '/':
+        path += '/'
+    return path
+def main():
+    url_n = 'http://read.qidian.com/chapter/'
+    url_v = 'http://vipreader.qidian.com/chapter'
+    if os.name == 'nt':
+        thisPath = os.getcwd()
+    elif os.name == 'Android':
+        thisPath = '/storage/emulated/0/qpython/scripts3'
+
 
 
 if __name__ == '__main__':
+    print(os.name)
     #main()
-    pass
+    #pass
+    #j = getByJson(980)
+    #print(j)
