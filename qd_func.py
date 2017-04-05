@@ -245,7 +245,7 @@ if __name__ == "__main__":
     # print(get_book_info(get_html_by_browser('http://book.qidian.com/info/3600493#Catalog')))
     # 获取书籍的章节和连接
     # print(get_volume_list('http://book.qidian.com/info/3600493#Catalog'))
-    tital, text, html= get_volume('http://read.qidian.com/chapter/mXVR4wuK70o1/EMQ5k8jKRMwex0RJOkJclQ2')
-    print(text)
-    save_file('t.txt',text)
-    save_file('t.txt.xhtml', html)
+    # tital, text, html= get_volume('http://read.qidian.com/chapter/mXVR4wuK70o1/EMQ5k8jKRMwex0RJOkJclQ2')
+    # print(text)
+    # save_file('t.txt',text)
+    # save_file('t.txt.xhtml', html)
