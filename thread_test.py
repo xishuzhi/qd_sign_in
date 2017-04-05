@@ -4,18 +4,29 @@ import time
 import random
 import qd_func
 class downloadbook(Thread):
-    def __init__(self,book_name,book_urls,dir_path,qd):
+    def __init__(self,book_name,book_volumes,dir_path,qd = qd_func):
         Thread.__init__(self)
-        self.name = book_name
-        self.urls = book_urls
+        self.book_name = book_name
+        self.book_volumes = book_volumes
         self.dir_path = dir_path
         self.qd = qd
     def run(self):
-        pass
-        # t = random.randint(0,5)
-        # print('run:%s,sleep=%s'% (self.name,t))
-        # time.sleep(t)
-        # print('stop:%s' % self.name)
+        if not os.path.exists(self.dir_path):
+            os.mkdir(self.dir_path)
+        print('start download <%s>' % self.book_name )
+        for i in self.book_volumes:
+            v_name = i['name']
+            v_url = i['url']
+            f_name = self.dir_path+'\\'+self.qd.replace_file_path(v_name)+'.txt'
+            if os.path.exists(f_name) and os.path.getsize(f_name) > 100:
+                pass
+            else:
+                tital, text, html = self.qd.get_volume(v_url)
+                self.qd.save_file(f_name,text)
+                self.qd.save_file(f_name+'.html',html)
+        print('download <%s> fin' % self.book_name )
+
+
 def path_win(path):
     path =  path.replace('/', '\\')
     if path[:-1] == '\\':
@@ -33,17 +44,19 @@ def path_format(path):
         path = path_linux(path)
     return path
 def getPath():
-    thisPath = './'
+    path = './'
     if os.name == 'nt':
-        thisPath = os.getcwd()
+        path = os.getcwd()
     elif os.name == 'Android':
-        thisPath = '/storage/emulated/0/qpython/scripts3'
+        path = '/storage/emulated/0/qpython/scripts3'
+    return path
 def main():
-
+    thisPath = getPath()
     free_list = qd_func.get_limit_list()
     for i in free_list:
         book_name = i['name']
         book_url = i['url']
+
 
 # #print(tasks)
 # blocks = 6
