@@ -141,19 +141,3 @@ if __name__ == "__main__":
         start_xm()
     else:
         main()
-    #start_by_id(1001375918)
-    # # l = qd_QDReader.getBookVolumeInfoJson(3656301)
-    # #print(l)
-    # # str = '\ue844'
-    # #https://vipreader.qidian.com/chapter/1001375918/343107854
-    # # print(str)
-    # tital, text, html = qd_func.get_volume('https://read.qidian.com/chapter/TXY5K4Ri046t-wSl2uB4dQ2/b-OnWqsDpEG2uJcMpdsVgA2')
-    # #\u3000
-    # print(html)
-    # qd_func.save_file('test.html',html)
-    # if html.find('　') > 0:
-    #     print('hehe')
-    # # for x in range(0xff01, 0xff7f):
-    # #     print(x)
-    # # _tbl = dict((x, x - 0xff00 + 0x20) for x in range(0xff01, 0xff7f))
-    # # print(_tbl)
