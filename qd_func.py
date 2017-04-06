@@ -129,8 +129,8 @@ def get_html(url,count=0):
 def get_html_by_browser(url):
     browser = webdriver.Chrome()
     browser.get(url)
-    #time.sleep(5)
-    browser.implicitly_wait(10)
+    time.sleep(5)
+    #browser.implicitly_wait(10)
     html_source = browser.page_source
     browser.quit()
     return html_source
@@ -234,6 +234,21 @@ def save_file(path,data):
         print('error:%s'% e)
         pass
 
+# #获取书籍信息和目录的JSON
+# def getBookInfoData(bookID):
+#     url = 'http://4g.if.qidian.com/Atom.axd/Api/Book/GetChapterList?BookId=%s' % bookID
+#     request = request.Request(url)
+#     request.add_header('Accept-encoding', 'gzip')
+#     request.add_header('User-Agent', 'Mozilla QDReaderAndroid/6.2.0/232/qidian/000000000000000')
+#
+#     response = request.urlopen(request)
+#     #print(response.read())
+#     data = response.read()
+#     #json_str = json.dumps(t)
+#     #print(response.info())
+#     html = gzip.decompress(data).decode("utf-8")
+#     #print(html)
+#     return html
 
 if __name__ == "__main__":
     pass

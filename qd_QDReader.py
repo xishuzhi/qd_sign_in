@@ -18,9 +18,27 @@ def getBookInfoData(bookID):
     #print(response.info())
     html = gzip.decompress(data).decode("utf-8")
     #print(html)
-    return html
-
-
+    json_data =  json.loads(html)
+    return json_data
+#获取章节详细信息 return [{'v_vip': 0, 'v_cid': 0000000, 'v_name': '章节名', 'v_url': 'https://vipreader.qidian.com/chapter/书ID_id/章节ID_cid'}, ]
+def getBookVolumeInfoJson(bookID):
+    book_id = bookID
+    book_info_json = getBookInfoData(book_id)
+    Data = book_info_json['Data']
+    Volumes = Data['Volumes']
+    Chapters = Data['Chapters']
+    book_info_data = []
+    for c in Chapters:
+        volume_name = c['n']
+        volume_cid = c['c']
+        volume_vip = c['v']
+        volume_url = 'https://vipreader.qidian.com/chapter/%s/%s' % (book_id, volume_cid)
+        if volume_cid > 0:
+            book_info_data.append(
+                {'v_name': volume_name, 'v_cid': volume_cid, 'v_vip': volume_vip, 'v_url': volume_url})
+            # print('章节名：%s，章节ID：%s，vip：%s' % (volume_name,volume_cid,volume_vip))
+    #print(book_info_data)
+    return book_info_data
 
 def getTextData(bookID,ChepterID):
     url = 'http://4g.if.qidian.com/Atom.axd/Api/Book/GetContent?BookId=%s&ChapterId=%s' % (bookID,ChepterID)
@@ -106,8 +124,7 @@ def start(id = 0,isVIP = False):
     thisPath = os.getcwd()
     book_ID = id
     print('开始下载:%s' % book_ID)
-    book_info_string = getBookInfoData(book_ID)
-    book_info_json = json.loads(book_info_string)
+    book_info_json = getBookInfoData(book_ID)
     #print(book_info_json)
     book_info_data = book_info_json['Data']
     book_name = book_info_data['BookName']
