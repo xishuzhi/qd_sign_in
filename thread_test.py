@@ -80,7 +80,8 @@ class downloadbook_by_json(Thread):
 def start_by_id(book_id):
     book_info_data, book_info_json = qd_QDReader.getBookVolumeInfoJson(book_id)
     book_name = book_info_json['Data']['BookName']
-    book_path = qd_func.getPath()
+    book_path = qd_func.getPath()+'\\'+book_name
+    book_path = qd_func.path_format(book_path)
     t = downloadbook_by_json(book_name, book_info_data, book_info_json, book_path)
     t.start()
     t.join()
