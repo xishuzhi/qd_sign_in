@@ -240,15 +240,17 @@ def path_linux(path):
 def path_format(path):
     if os.name == 'nt':
         path = path_win(path)
-    elif os.name == 'Android':
+    elif os.name == 'Android' or 'posix':
         path = path_linux(path)
     return path
 def getPath():
     path = './'
     if os.name == 'nt':
         path = os.getcwd()
-    elif os.name == 'Android':
-        path = '/storage/emulated/0/qpython/scripts3'
+    elif os.name == 'Android' or 'posix':
+        path = os.path.dirname(__file__)
+        if path == './':
+            path = '/storage/emulated/0/qpython/scripts3/projects3/qidian'
     return path
 
 def save_file(path,data):

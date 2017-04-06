@@ -4,6 +4,8 @@ from urllib import request
 import gzip
 import json
 import os
+import  sys
+sys_code = sys.getfilesystemencoding()
 
 #获取书籍信息和目录的JSON
 def getBookInfoData(bookID):
@@ -183,18 +185,21 @@ def start(id = 0,isVIP = False):
         f.close()
     print('下载《%s》完成' % book_name)
     return book_name , all_book_list
+
 def join_text(name,file_list):
     try:
-        with open(name, 'w') as f:
+        with open(name, 'w',encoding='utf-8') as f:
             for i in file_list:
-                if os.path.exists(i):
-                    with open(i, 'r') as a:
+                t = str(i)
+                if os.path.exists(t):
+                    with open(t, 'r',encoding='utf-8') as a:
                         f.write(a.read())
                         f.write('\n')
                         f.write('\n')
                         a.close()
             f.close()
-    except:
+    except Exception as e:
+        print('join_text_error : %s : %s' % (f,e))
         pass
 
 from bs4 import  BeautifulSoup
