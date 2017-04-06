@@ -38,6 +38,7 @@ class downloadbook_by_json(Thread):
         self.qd_func = qdf
         self.qd_QDReader = qdr
     def run(self):
+        self.dir_path = qd_func.path_format(self.dir_path)
         if not os.path.exists(self.dir_path):
             os.mkdir(self.dir_path)
         print('start download <%s>' % self.book_name )
@@ -76,10 +77,16 @@ class downloadbook_by_json(Thread):
         print('download <%s> fin,join file to %s' % (self.book_name,joinFilePath))
 
 
+def start_by_id(book_id):
+    book_info_data, book_info_json = qd_QDReader.getBookVolumeInfoJson(book_id)
+    book_name = book_info_json['Data']['BookName']
+    book_path = qd_func.getPath()
+    t = downloadbook_by_json(book_name, book_info_data, book_info_json, book_path)
+    t.start()
+    t.join()
 
 
-
-def main():
+def start_xm():
     # r = 'https://vipreader.qidian.com/chapter/%s/%s'
     thisPath = qd_func.getPath()
     book_id_list = qd_QDReader.get_limit_list()
@@ -100,13 +107,40 @@ def main():
         if task.isAlive():
             task.join()
 
-
-
+def menu():
+    #os.popen('cls')
+    #os.system('cls')
+    print ('输入书籍ID下载：')
+    print('输f下载当前限免书籍：')
+    print ('x. 退出')
+    selection = input('输入书籍ID：')
+    return selection
+def main():
+    try:
+        while True:
+            selection = menu()
+            if selection.isdigit() and int(selection) > 0:
+                start_by_id(selection)
+            elif selection == 'f' or selection == 'F':
+                start_xm()
+                break
+            elif selection == 'x' or selection == 'X':
+                break
+            else:
+                print('输入错误！')
+        print ('exit')
+    except Exception as e:
+        print ('Error: %s,%s' % (selection,e))
+    pass
 
 
 
 if __name__ == "__main__":
-    main()
+    if os.path.exists('autodownload.config'):
+        start_xm()
+    else:
+        main()
+    #start_by_id(1001375918)
     # # l = qd_QDReader.getBookVolumeInfoJson(3656301)
     # #print(l)
     # # str = '\ue844'
