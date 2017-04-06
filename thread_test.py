@@ -1,3 +1,4 @@
+#-*- coding：utf-8 -*-
 from threading import Thread
 import os
 import time
@@ -30,10 +31,11 @@ class downloadbook(Thread):
         print('download <%s> fin' % self.book_name )
 
 class downloadbook_by_json(Thread):
-    def __init__(self,book_name,book_volumes_json,dir_path,qdf = qd_func,qdr=qd_QDReader):
+    def __init__(self,book_name,book_volumes_json,book_info_json,dir_path,qdf = qd_func,qdr=qd_QDReader):
         Thread.__init__(self)
         self.book_name = book_name
         self.book_volumes_json = book_volumes_json
+        self.book_info_json = book_info_json
         self.dir_path = dir_path
         self.qd_func = qdf
         self.qd_QDReader = qdr
@@ -41,18 +43,29 @@ class downloadbook_by_json(Thread):
         if not os.path.exists(self.dir_path):
             os.mkdir(self.dir_path)
         print('start download <%s>' % self.book_name )
+        qd_func.save_file(self.dir_path+'\\'+'info_json.txt',str(self.book_info_json))
+        self.book_volumes_json.sort(key=lambda x:(x['count'],-x['count']))
+        qd_func.save_file(self.dir_path + '\\' + 'volumes_json.txt', str(self.book_volumes_json))
+        info_str = self.book_name+'\n'
         for i in self.book_volumes_json:
             #{'v_name': volume_name, 'v_cid': volume_cid, 'v_vip': volume_vip, 'v_url': volume_url}
             #print(i)
             v_name = i['v_name']
             v_url = i['v_url']
-            f_name = self.dir_path+'\\'+self.qd_func.replace_file_path(v_name)+'.txt'
-            if os.path.exists(f_name) and os.path.getsize(f_name) > 100:
+            v_cid = i['v_cid']
+            #f_name = self.dir_path+'\\'+self.qd_func.replace_file_path(v_name)+'.txt'
+            f_name = self.dir_path + '\\' + str(v_cid) + '.txt'
+            i_name = self.dir_path + '\\book_info.txt'
+            info_str += '%s.txt ---> %s\n' % (str(v_cid),v_name)
+            if os.path.exists(f_name) and os.path.getsize(f_name) > 0:
+                #print('pass <%s> ---> %s' % (self.book_name,v_name))
                 pass
             else:
                 tital, text, html = self.qd_func.get_volume(v_url)
+                print('download <%s> ---> %s' % (self.book_name,tital))
                 self.qd_func.save_file(f_name,text)
                 self.qd_func.save_file(f_name+'.html',html)
+        self.qd_func.save_file(i_name, info_str)
         print('download <%s> fin' % self.book_name )
 
 def path_win(path):
@@ -153,10 +166,10 @@ def main():
         book_id = info['id']
         book_url = info['url']
         book_path = thisPath+'\\'+book_name
-        book_info_list = qd_QDReader.getBookVolumeInfoJson(book_id)
+        book_info_data, book_info_json = qd_QDReader.getBookVolumeInfoJson(book_id)
         # print('name=%s,id=%s,url=%s,path=%s,list=%s' % (book_name,book_id,book_url,book_path,book_info_list))
         # print(book_info_list)
-        t = downloadbook_by_json(book_name,book_info_list,book_path)
+        t = downloadbook_by_json(book_name,book_info_data,book_info_json,book_path)
         t.start()
         tasks.append(t)
     for task in tasks:
@@ -170,5 +183,18 @@ def main():
 
 if __name__ == "__main__":
     main()
-    # l = qd_QDReader.getBookVolumeInfoJson(3656301)
-    # print(l)
+    # # l = qd_QDReader.getBookVolumeInfoJson(3656301)
+    # #print(l)
+    # # str = '\ue844'
+    # #https://vipreader.qidian.com/chapter/1001375918/343107854
+    # # print(str)
+    # tital, text, html = qd_func.get_volume('https://read.qidian.com/chapter/TXY5K4Ri046t-wSl2uB4dQ2/b-OnWqsDpEG2uJcMpdsVgA2')
+    # #\u3000
+    # print(html)
+    # qd_func.save_file('test.html',html)
+    # if html.find('　') > 0:
+    #     print('hehe')
+    # # for x in range(0xff01, 0xff7f):
+    # #     print(x)
+    # # _tbl = dict((x, x - 0xff00 + 0x20) for x in range(0xff01, 0xff7f))
+    # # print(_tbl)

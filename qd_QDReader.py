@@ -1,3 +1,4 @@
+#-*- coding：utf-8 -*-
 import urllib
 from urllib import request
 import gzip
@@ -28,6 +29,7 @@ def getBookVolumeInfoJson(bookID):
     Volumes = Data['Volumes']
     Chapters = Data['Chapters']
     book_info_data = []
+    count = 0
     for c in Chapters:
         volume_name = c['n']
         volume_cid = c['c']
@@ -35,10 +37,11 @@ def getBookVolumeInfoJson(bookID):
         volume_url = 'https://vipreader.qidian.com/chapter/%s/%s' % (book_id, volume_cid)
         if volume_cid > 0:
             book_info_data.append(
-                {'v_name': volume_name, 'v_cid': volume_cid, 'v_vip': volume_vip, 'v_url': volume_url})
+                {'v_name': volume_name, 'v_cid': volume_cid, 'v_vip': volume_vip, 'v_url': volume_url,'count':count})
+        count += 1
             # print('章节名：%s，章节ID：%s，vip：%s' % (volume_name,volume_cid,volume_vip))
     #print(book_info_data)
-    return book_info_data
+    return book_info_data,book_info_json
 
 def getTextData(bookID,ChepterID):
     url = 'http://4g.if.qidian.com/Atom.axd/Api/Book/GetContent?BookId=%s&ChapterId=%s' % (bookID,ChepterID)

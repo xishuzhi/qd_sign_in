@@ -1,8 +1,9 @@
+#-*- coding：utf-8 -*-
 from urllib import request
 from bs4 import BeautifulSoup
 from selenium import webdriver
 import time
-
+import os
 
 #制作字符替换字典
 def make_dict(s_in,s_out):
@@ -202,7 +203,7 @@ def get_volume(url):
     </html>
     """
     try:
-        metaSoup = BeautifulSoup(ht, "html.parser")
+        metaSoup = BeautifulSoup(ht,"html.parser") #BeautifulSoup(ht, "html.parser")
         book_info = metaSoup.find('h3', attrs={'class': 'j_chapterName'})
         book_data = metaSoup.find('div', attrs={'class': 'read-content j_readContent'})
         # print(book_info)
@@ -216,7 +217,8 @@ def get_volume(url):
         text += (volume_data.replace('　　', '\n　　'))
         text = replace_title(text)
         v_n = replace_title(volume_name)
-        htm = str(book_data.prettify())
+        htm = book_data.prettify()
+        htm = htm.replace('<p>\n','<p>  ')
         html = src_text % (v_n, v_n, htm)
         tital = replace_file_path(v_n)
     except:
@@ -225,13 +227,39 @@ def get_volume(url):
         #return book_info.get_text().encode('utf-8')
         return tital,text,html
 
+def path_win(path):
+    path =  path.replace('/', '\\')
+    if path[:-1] == '\\':
+        path = path[0:-1]
+    return path
+def path_linux(path):
+    path =  path.replace('\\', '/')
+    if path[:-1] == '/':
+        path = path[0:-1]
+    return path
+def path_format(path):
+    if os.name == 'nt':
+        path = path_win(path)
+    elif os.name == 'Android':
+        path = path_linux(path)
+    return path
+def getPath():
+    path = './'
+    if os.name == 'nt':
+        path = os.getcwd()
+    elif os.name == 'Android':
+        path = '/storage/emulated/0/qpython/scripts3'
+    return path
+
 def save_file(path,data):
     try:
-        with open(path,'w') as f:
+        path = path_format(path)
+        #data = data.replace('\ue844',' ')
+        with open(path,'w', encoding='utf-8') as f:
             f.write(str(data))
             f.close()
     except Exception as e:
-        print('error:%s'% e)
+        print('error:file(%s):%s'% (path,e))
         pass
 
 # #获取书籍信息和目录的JSON
