@@ -47,6 +47,7 @@ class downloadbook_by_json(Thread):
         qd_func.save_file(self.dir_path + '\\' + 'volumes_json.txt', str(self.book_volumes_json))
         info_str = self.book_name+'\n'
         file_list = []
+        isNew = False
         for i in self.book_volumes_json:
             #{'v_name': volume_name, 'v_cid': volume_cid, 'v_vip': volume_vip, 'v_url': volume_url}
             #print(i)
@@ -67,14 +68,18 @@ class downloadbook_by_json(Thread):
                 tital, text, html = self.qd_func.get_volume(v_url)
                 print('download <%s> ---> %s' % (self.book_name,tital))
                 self.qd_func.save_file(f_name,text)
+                isNew = True
                 if os.path.exists('save_html.config'):
                     self.qd_func.save_file(f_name+'.html',html)
         self.qd_func.save_file(i_name, info_str)
         joinFilePath = self.dir_path+'\\'+self.book_name+'.txt'
         joinFilePath = qd_func.path_format(joinFilePath)
-        qd_QDReader.join_text(joinFilePath,file_list);
+        if isNew:
+            qd_QDReader.join_text(joinFilePath,file_list);
+            print('download <%s> fin,join file to %s' % (self.book_name,joinFilePath))
+        else:
         #print(file_list)
-        print('download <%s> fin,join file to %s' % (self.book_name,joinFilePath))
+            print('download <%s> fin' % (self.book_name))
 
 
 def start_by_id(book_id):
@@ -116,7 +121,7 @@ def menu():
     print ('x. 退出')
     selection = input('输入书籍ID：')
     return selection
-def main():
+def start_main():
     try:
         while True:
             selection = menu()
@@ -135,9 +140,10 @@ def main():
     pass
 
 
-
-if __name__ == "__main__":
+def main():
     if os.path.exists('autodownload.config'):
         start_xm()
     else:
-        main()
+        start_main()
+if __name__ == "__main__":
+    main()
