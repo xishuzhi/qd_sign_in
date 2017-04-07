@@ -13,17 +13,22 @@ class td(Thread):
     def run(self):
         try:
             file_path = self.dir_path+'\\'+ replace_file_path(self.book_name)+'.txt'
-            if os.path.exists(file_path):
+            if os.path.exists(file_path) and os.path.getsize(file_path) > 100:
                 #print('pass : %s')
                 pass
             else:
-                print('download<%s>:%s , %s' % (self.book_name, self.url, file_path))
+
                 txt = get_text(self.url)
                 if len(txt) > 0 and txt != '404':
                     str = self.book_name
                     str += '\n'
                     str += replace_str(txt)
-                    save_file(file_path, str)
+                    if len(str) > len(self.book_name):
+                        print('download<%s>:%s , %s' % (self.book_name, self.url, file_path))
+                        save_file(file_path, str)
+                    else:
+                        print('error<%s>:%s , %s' % (self.book_name, self.url, file_path))
+
         except Exception as e:
             print(e)
 
@@ -40,7 +45,7 @@ def main_t():
         count+=1
     #print('count='+str(count))
 
-    blocks = 16
+    blocks = 26
     task_index = 0
     threads = []
 
