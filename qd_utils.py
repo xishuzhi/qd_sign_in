@@ -45,6 +45,8 @@ def replace_file_path(path):
     path = path.replace('!', '！')
     path = path.replace('\n', '')
     path = path.replace('', ' ')
+    path = path.replace('|', '_')
+    path = path.replace(':', '：')
     path = path.strip()
     path = path.lstrip()
     return path

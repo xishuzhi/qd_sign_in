@@ -14,13 +14,13 @@ class td(Thread):
         try:
             file_path = self.dir_path+'\\'+ replace_file_path(self.book_name)+'.txt'
             if os.path.exists(file_path):
-                print('pass : %s')
+                #print('pass : %s')
                 pass
             else:
-                print('download<%s>:%s , %s' % (self.book_name, url, file_path))
-                txt = get_text(url)
+                print('download<%s>:%s , %s' % (self.book_name, self.url, file_path))
+                txt = get_text(self.url)
                 if len(txt) > 0 and txt != '404':
-                    str = name
+                    str = self.book_name
                     str += '\n'
                     str += replace_str(txt)
                     save_file(file_path, str)
@@ -38,10 +38,9 @@ def main_t():
         url = i['url']
         tasks.append(td(name,url,path))
         count+=1
-    print('count='+str(count))
+    #print('count='+str(count))
 
     blocks = 16
-    task_count = blocks
     task_index = 0
     threads = []
 
@@ -172,11 +171,11 @@ def get_html_se(url,count=0):
     return html
 def get_text(url):
     html = get_html_se(url)
-    print(html)
+    #print(html)
     try:
         bs = BeautifulSoup(html, 'html.parser')
         textList = bs.find('div', attrs={'class': 'novelContent'})
-        print(textList)
+        #print(textList)
         return textList.get_text()
     except Exception as e:
         print(e)
@@ -188,8 +187,8 @@ def replace_str(text):
     return text
 if __name__ == "__main__":
     pass
-    #main()
-    print(get_text('http://www.55rere.com/se/dushijiqing/525368.html'))
+    main_t()
+    #print(get_text('http://www.55rere.com/se/dushijiqing/525368.html'))
 
 
 
