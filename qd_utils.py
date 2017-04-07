@@ -127,7 +127,7 @@ def get_html(url,count=0):
         url = ''
         url = url
         req = request.Request(url)
-        req.add_header('Accept-encoding', 'gzip,deflate')
+        req.add_header('Accept-encoding', 'gzip,deflate,sdch')
         #req.add_header('User-Agent', 'Mozilla QDReaderAndroid/6.2.0/232/qidian/000000000000000')
         req.add_header('User-Agent','Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3033.0 Safari/537.36')
         # 返回页面内容
