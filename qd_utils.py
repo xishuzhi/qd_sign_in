@@ -5,6 +5,7 @@ from selenium import webdriver
 import time
 import os
 import gzip
+import json
 
 #制作字符替换字典
 def make_dict(s_in,s_out):
@@ -48,17 +49,23 @@ def replace_file_path(path):
     path = path.lstrip()
     return path
 
-#从免费书列表中获取限免书籍信息 return{'name':书名,'url':'https://book.qidian.com/info/0000000#Catalog"}
+#从免费书列表中获取限免书籍信息 return{'name':书名,'url':'https://book.qidian.com/info/0000000#Catalog",'id':书ID}
 def get_limit_list():
     fp = request.urlopen("https://f.qidian.com/")
     html = fp.read()
     metaSoup = BeautifulSoup(html, "html.parser")
+    # print(metaSoup)
     limit_list = metaSoup.find('div', attrs={'id': 'limit-list'})
+    # print(limit_list)
     book_info_list = limit_list.findAll('div', attrs={'class': 'book-mid-info'})
     book = []
     for i in book_info_list:
-        data = {'name':i.h4.get_text(),'url':'http:' + i.h4.a['href']+"#Catalog"}
+        id_link = i.h4.a['href']
+        id = id_link.split('/')[-1]
+        #print(id_link.split('/')[-1])
+        data = {'name':i.h4.get_text(),'url':'http:' + id_link+"#Catalog",'id':id}
         book.append(data)
+    #print(book)
     return book
 
 #从书页源码中获取书名，作者，总章节数量，return 书名，作者，章节数量
@@ -113,9 +120,12 @@ def get_book_by_id(id):
         name = 'None'
     book = [{'name':name,'url':url+"#Catalog"}]
     return book
+
 #打开链接获取页面源码，return utf-8编码的网页源码
 def get_html(url,count=0):
     try:
+        url = ''
+        url = url
         req = request.Request(url)
         req.add_header('Accept-encoding', 'gzip,deflate')
         #req.add_header('User-Agent', 'Mozilla QDReaderAndroid/6.2.0/232/qidian/000000000000000')
@@ -135,6 +145,7 @@ def get_html(url,count=0):
             return '404'
         return get_html(url,count+1)
     return html
+
 #用浏览器打开网页获得源码
 def get_html_by_browser(url):
     browser = webdriver.Chrome()
@@ -273,21 +284,75 @@ def save_file(path,data):
         print('error:file(%s):%s'% (path,e))
         pass
 
-# #获取书籍信息和目录的JSON
-# def getBookInfoData(bookID):
-#     url = 'http://4g.if.qidian.com/Atom.axd/Api/Book/GetChapterList?BookId=%s' % bookID
-#     request = request.Request(url)
-#     request.add_header('Accept-encoding', 'gzip')
-#     request.add_header('User-Agent', 'Mozilla QDReaderAndroid/6.2.0/232/qidian/000000000000000')
-#
-#     response = request.urlopen(request)
-#     #print(response.read())
-#     data = response.read()
-#     #json_str = json.dumps(t)
-#     #print(response.info())
-#     html = gzip.decompress(data).decode("utf-8")
-#     #print(html)
-#     return html
+#获取书籍信息和目录的JSON
+def getBookInfoData(bookID):
+    url = 'http://4g.if.qidian.com/Atom.axd/Api/Book/GetChapterList?BookId=%s' % bookID
+    req = request.Request(url)
+    req.add_header('Accept-encoding', 'gzip')
+    req.add_header('User-Agent', 'Mozilla QDReaderAndroid/6.2.0/232/qidian/000000000000000')
+
+    response = request.urlopen(req)
+    #print(response.read())
+    data = response.read()
+    #json_str = json.dumps(t)
+    #print(response.info())
+    html = gzip.decompress(data).decode("utf-8")
+    #print(html)
+    json_data =  json.loads(html)
+    return json_data
+#获取章节详细信息 return [{'v_vip': 0, 'v_cid': 0000000, 'v_name': '章节名', 'v_url': 'https://vipreader.qidian.com/chapter/书ID_id/章节ID_cid'}, ]
+def getBookVolumeInfoJson(bookID):
+    book_id = bookID
+    book_info_json = getBookInfoData(book_id)
+    Data = book_info_json['Data']
+    Volumes = Data['Volumes']
+    Chapters = Data['Chapters']
+    book_info_data = []
+    count = 0
+    for c in Chapters:
+        volume_name = c['n']
+        volume_cid = c['c']
+        volume_vip = c['v']
+        volume_url = 'https://vipreader.qidian.com/chapter/%s/%s' % (book_id, volume_cid)
+        if volume_cid > 0:
+            book_info_data.append(
+                {'v_name': volume_name, 'v_cid': volume_cid, 'v_vip': volume_vip, 'v_url': volume_url,'count':count})
+        count += 1
+            # print('章节名：%s，章节ID：%s，vip：%s' % (volume_name,volume_cid,volume_vip))
+    #print(book_info_data)
+    return book_info_data,book_info_json
+#合并文本
+def join_text(name,file_list):
+    try:
+        with open(name, 'w',encoding='utf-8') as f:
+            for i in file_list:
+                t = str(i)
+                if os.path.exists(t):
+                    with open(t, 'r',encoding='utf-8') as a:
+                        f.write(a.read())
+                        f.write('\n')
+                        f.write('\n')
+                        a.close()
+            f.close()
+    except Exception as e:
+        print('join_text_error : %s : %s' % (f,e))
+        pass
+#获取客户端形式的的JSON结果，适用于免费章节
+def getTextData(bookID,ChepterID):
+    url = 'http://4g.if.qidian.com/Atom.axd/Api/Book/GetContent?BookId=%s&ChapterId=%s' % (bookID,ChepterID)
+    req = request.Request(url)
+    req.add_header('Accept-encoding', 'gzip')
+    req.add_header('User-Agent', 'Mozilla QDReaderAndroid/6.2.0/232/qidian/000000000000000')
+    res = request.urlopen(req)
+    data = res.read()
+    html = gzip.decompress(data).decode("utf-8")
+    #print(html)
+    result = json.loads(html)
+    if(result['Message']) == '失败':
+        print("error:%s" % url)
+        return ''
+    return result
+
 
 if __name__ == "__main__":
     pass
