@@ -280,9 +280,45 @@ def save_file(path,data):
         with open(path,'w', encoding='utf-8') as f:
             f.write(str(data))
             f.close()
+            return True
     except Exception as e:
         print('error:file(%s):%s'% (path,e))
+        return False
         pass
+def open_file(path):
+    try:
+        path = path_format(path)
+        with open(path,'r', encoding='utf-8') as f:
+            data = f.read()
+            f.close()
+            return data;
+    except Exception as e:
+        print('error:file(%s):%s'% (path,e))
+        return ''
+        pass
+
+def save_gzip(path, data):
+    try:
+        path = path_format(path)
+        content = str(data).encode('utf-8')
+        with gzip.open(path, 'wb') as f:
+            f.write(content)
+            f.close()
+            return True
+    except Exception as e:
+        print('save_gzip error:file(%s):%s' % (path, e))
+        return False
+        pass
+
+def open_gzip(path):
+    try:
+        with gzip.open(path, 'rb') as f:
+            data = f.read().decode('utf-8')
+            f.close
+            return data
+    except Exception as e:
+        print('open_gzip error file:(%s);%s' % (path,e))
+        return ''
 
 #获取书籍信息和目录的JSON
 def getBookInfoData(bookID):
@@ -333,6 +369,13 @@ def join_text(name,file_list):
                         f.write('\n')
                         f.write('\n')
                         a.close()
+                elif os.path.exists(t+'.gz'):
+                    with gzip.open(t+'.gz', 'rb') as a:
+                        data = a.read().decode('utf-8')
+                        f.write(data)
+                        f.write('\n')
+                        f.write('\n')
+                        a.close
             f.close()
     except Exception as e:
         print('join_text_error : %s : %s' % (f,e))
