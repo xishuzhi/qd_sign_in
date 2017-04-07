@@ -31,7 +31,7 @@ def replace_text(text):
     return text
 #替换标题不用做路径和文件名
 def replace_title(text):
-    t = make_dict('１２３４５６７８９０，．！?!\n', '1234567890，。！？！ ')
+    t = make_dict('ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ１２３４５６７８９０，．！?!\n', 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890，。！？！ ')
     text = text.translate(t)
     text = text.strip()
     text = text.lstrip()
@@ -48,7 +48,6 @@ def replace_file_path(path):
     path = path.strip()
     path = path.lstrip()
     return path
-
 #从免费书列表中获取限免书籍信息 return{'name':书名,'url':'https://book.qidian.com/info/0000000#Catalog",'id':书ID}
 def get_limit_list():
     fp = request.urlopen("https://f.qidian.com/")
@@ -67,7 +66,6 @@ def get_limit_list():
         book.append(data)
     #print(book)
     return book
-
 #从书页源码中获取书名，作者，总章节数量，return 书名，作者，章节数量
 def get_book_info(text):
     if text:
@@ -120,12 +118,9 @@ def get_book_by_id(id):
         name = 'None'
     book = [{'name':name,'url':url+"#Catalog"}]
     return book
-
 #打开链接获取页面源码，return utf-8编码的网页源码
 def get_html(url,count=0):
     try:
-        url = ''
-        url = url
         req = request.Request(url)
         req.add_header('Accept-encoding', 'gzip,deflate,sdch')
         #req.add_header('User-Agent', 'Mozilla QDReaderAndroid/6.2.0/232/qidian/000000000000000')
@@ -145,7 +140,6 @@ def get_html(url,count=0):
             return '404'
         return get_html(url,count+1)
     return html
-
 #用浏览器打开网页获得源码
 def get_html_by_browser(url):
     browser = webdriver.Chrome()
@@ -200,7 +194,6 @@ def get_volume_list(url='',count=0):
                     f.write(metaSoup.prettify('utf-8'))
                     f.close()
             return []
-
 #获取章节内容,return 章节名，txt文本，html文本
 def get_volume(url):
     ht = get_html(url)
@@ -246,7 +239,6 @@ def get_volume(url):
     finally:
         #return book_info.get_text().encode('utf-8')
         return tital,text,html
-
 def path_win(path):
     path =  path.replace('/', '\\')
     if path[:-1] == '\\':
@@ -272,7 +264,6 @@ def getPath():
         if path == './':
             path = '/storage/emulated/0/qpython/scripts3/projects3/qidian'
     return path
-
 def save_file(path,data):
     try:
         path = path_format(path)
@@ -296,7 +287,6 @@ def open_file(path):
         print('error:file(%s):%s'% (path,e))
         return ''
         pass
-
 def save_gzip(path, data):
     try:
         path = path_format(path)
@@ -309,7 +299,6 @@ def save_gzip(path, data):
         print('save_gzip error:file(%s):%s' % (path, e))
         return False
         pass
-
 def open_gzip(path):
     try:
         with gzip.open(path, 'rb') as f:
@@ -319,7 +308,6 @@ def open_gzip(path):
     except Exception as e:
         print('open_gzip error file:(%s);%s' % (path,e))
         return ''
-
 #获取书籍信息和目录的JSON
 def getBookInfoData(bookID):
     url = 'http://4g.if.qidian.com/Atom.axd/Api/Book/GetChapterList?BookId=%s' % bookID
@@ -362,7 +350,7 @@ def join_text(name,file_list):
     try:
         with open(name, 'w',encoding='utf-8') as f:
             for i in file_list:
-                t = str(i)
+                t = path_format(str(i))
                 if os.path.exists(t):
                     with open(t, 'r',encoding='utf-8') as a:
                         f.write(a.read())
@@ -411,3 +399,8 @@ if __name__ == "__main__":
     # print(text)
     # save_file('t.txt',text)
     # save_file('t.txt.xhtml', html)
+    # ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ
+    # ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ
+    #
+    # abcdefghijklmnopqrstuvwxyz
+    # ABCDEFGHIJKLMNOPQRSTUVWXYZ

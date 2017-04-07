@@ -90,13 +90,13 @@ class downloadbook_to_gzip(Thread):
             i_name = self.dir_path + '\\book_info.txt'
             i_name = path_format(i_name)
             info_str += '%s.txt ---> %s\n' % (str(v_cid),v_name)
-            if os.path.exists(f_name) and os.path.getsize(f_name) > 0:
+            if os.path.exists(f_name) and os.path.getsize(f_name) > 100:
                 #print('pass <%s> ---> %s' % (self.book_name,v_name))
                 text_data = open_file(f_name)
                 if len(text_data) > 0:
                     if save_gzip(gz_name,text_data):
                         os.remove(f_name)
-                if os.path.exists(gz_name) and os.path.getsize(gz_name) > 0:
+                if os.path.exists(gz_name) and os.path.getsize(gz_name) > 100:
                     pass
                 # 检查html文件
                 if os.path.exists(f_name + '.html'):
