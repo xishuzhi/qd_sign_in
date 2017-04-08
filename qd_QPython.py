@@ -174,6 +174,7 @@ def start_xm():
         book_id = info['id']
         book_url = info['url']
         book_path = thisPath+'\\'+book_name
+        #整理过的的json，原始json，是否限免
         book_info_data, book_info_json, is_free_limit = getBookVolumeInfoJson(book_id)
         # print('name=%s,id=%s,url=%s,path=%s,list=%s' % (book_name,book_id,book_url,book_path,book_info_list))
         # print(book_info_list)
