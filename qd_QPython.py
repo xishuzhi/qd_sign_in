@@ -125,13 +125,16 @@ class downloadbook_to_gzip(Thread):
                     save_gzip(gz_html,html)
 
         #save_file(i_name, info_str)
+        if os.path.exists(i_name):
+            os.remove(i_name)
         save_gzip(i_name+'.gz', info_str)
         joinFilePath = self.dir_path+'\\'+self.book_name+'.txt'
         joinFilePath = path_format(joinFilePath)
-        if isNew:
+        if isNew or not os.path.exists(joinFilePath+'.gz'):
             #join_text(joinFilePath,file_list)
             join_text_gz(joinFilePath+'.gz',file_list)
             print('download <%s> fin,join file to %s' % (self.book_name,joinFilePath+'.gz'))
+        # 没有更新但是有txt文件存在，打包删除txt
         if os.path.exists(joinFilePath):
             if save_gzip(joinFilePath+'.gz',open_file(joinFilePath)):
                 os.remove(joinFilePath)
