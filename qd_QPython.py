@@ -131,7 +131,7 @@ class downloadbook_to_gzip(Thread):
                 #save_file(f_name,text)
                 save_gzip(gz_name,text)
                 isNew = True
-                if os.path.exists('save_html.config'):
+                if os.path.exists('savehtml.config') or os.path.exists('save_html.config'):
                     #save_file(f_name+'.html',html)
                     save_gzip(gz_html,html)
 
@@ -213,7 +213,7 @@ def start_main():
     pass
 
 def main():
-    if os.path.exists('autodownload.config'):
+    if os.path.exists('autodownload.config') or os.path.exists('auto_download.config'):
         start_xm()
     else:
         start_main()

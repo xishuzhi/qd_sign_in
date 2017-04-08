@@ -326,6 +326,7 @@ def getBookInfoData(bookID):
     #print(html)
     json_data =  json.loads(html)
     return json_data
+#整理过的的json，原始json，是否限免
 #获取章节详细信息 return [{'v_vip': 0, 'v_cid': 0000000, 'v_name': '章节名', 'v_url': 'https://vipreader.qidian.com/chapter/书ID_id/章节ID_cid'}, ]
 def getBookVolumeInfoJson(bookID):
     book_id = bookID
