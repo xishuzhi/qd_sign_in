@@ -69,15 +69,15 @@ class downloadbook_to_gzip(Thread):
         print('start download <%s>' % self.book_name )
         #save_file(self.dir_path+'\\'+'info_json.txt',str(self.book_info_json))
         #save_file(self.dir_path + '\\' + 'volumes_json.txt', str(self.book_volumes_json))
-
-        if os.path.exists(self.dir_path+'\\'+'info_json.txt'):
-            os.remove(self.dir_path+'\\'+'info_json.txt')
-        if os.path.exists(self.dir_path + '\\' + 'volumes_json.txt'):
-            os.remove(self.dir_path + '\\' + 'volumes_json.txt')
-
+        f_info = path_format(self.dir_path+'\\'+'info_json.txt')
+        f_volumes = path_format(self.dir_path + '\\' + 'volumes_json.txt')
+        if os.path.exists(f_info):
+            os.remove(f_info)
+        if os.path.exists(f_volumes):
+            os.remove(f_volumes)
         self.book_volumes_json.sort(key=lambda x: (x['count'], -x['count']))
-        save_gzip(self.dir_path + '\\' + 'info_json.txt.gz', str(self.book_info_json))
-        save_gzip(self.dir_path + '\\' + 'volumes_json.txt.gz', str(self.book_volumes_json))
+        save_gzip(f_info+'.gz', str(self.book_info_json))
+        save_gzip(f_volumes+'.gz', str(self.book_volumes_json))
         info_str = self.book_name+'\n'
         file_list = []
         isNew = False
