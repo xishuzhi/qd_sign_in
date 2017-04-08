@@ -129,7 +129,7 @@ class zip(object):
         for zfile in zf.filelist:
             zfile.create_system = 0
         return self
-
+from qd_utils import *
 if __name__ == "__main__":
     pass
     sta = """
@@ -192,16 +192,17 @@ if __name__ == "__main__":
 
 
     """
-    print('start')
-    # for i in range(22,42):
-    #     save_tar_gz('t.tar.gz','000_%s.txt'%i,sta.encode('utf-8'))
-    imz = InMemoryZIP()
-    #imz.appendfile('a.txt').append('test.txt', 'This is content in test.txt')
-    # for i in range(0,10):
-    #     imz.append('test%s.txt'%i, sta)
-    # imz.writetofile('test.zip')
-    z = imz.read('test.zip')
+    # print('start')
+    # # for i in range(22,42):
+    # #     save_tar_gz('t.tar.gz','000_%s.txt'%i,sta.encode('utf-8'))
+    # imz = InMemoryZIP()
+    # #imz.appendfile('a.txt').append('test.txt', 'This is content in test.txt')
+    # # for i in range(0,10):
+    # #     imz.append('test%s.txt'%i, sta)
+    # # imz.writetofile('test.zip')
+    # z = imz.read('test.zip')
+    # print()
+    #
+    # print('end')
+    getBookVolumeInfoJson(1004600033)
     print()
-
-    print('end')
-

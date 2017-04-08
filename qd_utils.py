@@ -333,6 +333,7 @@ def getBookVolumeInfoJson(bookID):
     Data = book_info_json['Data']
     Volumes = Data['Volumes']
     Chapters = Data['Chapters']
+    is_free_limit = Data['IsFreeLimit']
     book_info_data = []
     count = 0
     for c in Chapters:
@@ -346,7 +347,7 @@ def getBookVolumeInfoJson(bookID):
         count += 1
             # print('章节名：%s，章节ID：%s，vip：%s' % (volume_name,volume_cid,volume_vip))
     #print(book_info_data)
-    return book_info_data,book_info_json
+    return book_info_data,book_info_json,is_free_limit
 #合并文本
 def join_text(name,file_list):
     try:

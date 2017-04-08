@@ -3,12 +3,13 @@ from threading import Thread
 
 
 class downloadbook_by_json(Thread):
-    def __init__(self,book_name,book_volumes_json,book_info_json,dir_path):
+    def __init__(self,book_name,book_volumes_json,book_info_json,dir_path,is_free_limit=-1):
         Thread.__init__(self)
         self.book_name = book_name
         self.book_volumes_json = book_volumes_json
         self.book_info_json = book_info_json
         self.dir_path = dir_path
+        self.is_free_limit = is_free_limit
 
     def run(self):
         self.dir_path = path_format(self.dir_path)
@@ -55,13 +56,13 @@ class downloadbook_by_json(Thread):
             print('download <%s> fin' % (self.book_name))
 
 class downloadbook_to_gzip(Thread):
-    def __init__(self,book_name,book_volumes_json,book_info_json,dir_path):
+    def __init__(self,book_name,book_volumes_json,book_info_json,dir_path,is_free_limit=-1):
         Thread.__init__(self)
         self.book_name = book_name
         self.book_volumes_json = book_volumes_json
         self.book_info_json = book_info_json
         self.dir_path = dir_path
-
+        self.is_free_limit = is_free_limit
     def run(self):
         self.dir_path = path_format(self.dir_path)
         if not os.path.exists(self.dir_path):
@@ -87,6 +88,7 @@ class downloadbook_to_gzip(Thread):
             v_name = i['v_name']
             v_url = i['v_url']
             v_cid = i['v_cid']
+            v_vip = i['v_vip']
             #f_name = self.dir_path+'\\'+self.qd_func.replace_file_path(v_name)+'.txt'
             f_name = self.dir_path + '\\' + str(v_cid) + '.txt'
             gz_name = self.dir_path + '\\' + str(v_cid) + '.txt.gz'
@@ -114,7 +116,7 @@ class downloadbook_to_gzip(Thread):
                     else:
                         os.remove(f_name + '.html')
                 pass
-            elif os.path.exists(gz_name) and os.path.getsize(gz_name) > 100:
+            elif (os.path.exists(gz_name) and os.path.getsize(gz_name) > 100) or (self.is_free_limit == -1 and v_vip == 1):
                 pass
             else:
                 tital, text, html = get_volume(v_url)
@@ -144,12 +146,12 @@ class downloadbook_to_gzip(Thread):
             print('download <%s> fin' % (self.book_name))
 
 def start_by_id(book_id):
-    book_info_data, book_info_json = getBookVolumeInfoJson(book_id)
+    book_info_data, book_info_json, is_free_limit = getBookVolumeInfoJson(book_id)
     book_name = book_info_json['Data']['BookName']
     book_path = getPath()+'\\'+book_name
     book_path = path_format(book_path)
     #t = downloadbook_by_json(book_name, book_info_data, book_info_json, book_path)
-    t = downloadbook_to_gzip(book_name, book_info_data, book_info_json, book_path)
+    t = downloadbook_to_gzip(book_name, book_info_data, book_info_json, book_path,is_free_limit)
     t.start()
     t.join()
 
@@ -165,10 +167,10 @@ def start_xm():
         book_id = info['id']
         book_url = info['url']
         book_path = thisPath+'\\'+book_name
-        book_info_data, book_info_json = getBookVolumeInfoJson(book_id)
+        book_info_data, book_info_json, is_free_limit = getBookVolumeInfoJson(book_id)
         # print('name=%s,id=%s,url=%s,path=%s,list=%s' % (book_name,book_id,book_url,book_path,book_info_list))
         # print(book_info_list)
-        t = downloadbook_to_gzip(book_name,book_info_data,book_info_json,book_path)
+        t = downloadbook_to_gzip(book_name,book_info_data,book_info_json,book_path,is_free_limit)
         t.start()
         tasks.append(t)
     for task in tasks:
