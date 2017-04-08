@@ -67,9 +67,11 @@ class downloadbook_to_gzip(Thread):
         if not os.path.exists(self.dir_path):
             os.mkdir(self.dir_path)
         print('start download <%s>' % self.book_name )
-        save_file(self.dir_path+'\\'+'info_json.txt',str(self.book_info_json))
+        #save_file(self.dir_path+'\\'+'info_json.txt',str(self.book_info_json))
+        save_gzip(self.dir_path + '\\' + 'info_json.txt.gz', str(self.book_info_json))
         self.book_volumes_json.sort(key=lambda x:(x['count'],-x['count']))
-        save_file(self.dir_path + '\\' + 'volumes_json.txt', str(self.book_volumes_json))
+        #save_file(self.dir_path + '\\' + 'volumes_json.txt', str(self.book_volumes_json))
+        save_gzip(self.dir_path + '\\' + 'volumes_json.txt.gz', str(self.book_volumes_json))
         info_str = self.book_name+'\n'
         file_list = []
         isNew = False
@@ -116,12 +118,17 @@ class downloadbook_to_gzip(Thread):
                     #save_file(f_name+'.html',html)
                     save_gzip(gz_html,html)
 
-        save_file(i_name, info_str)
+        #save_file(i_name, info_str)
+        save_gzip(i_name+'.gz', info_str)
         joinFilePath = self.dir_path+'\\'+self.book_name+'.txt'
         joinFilePath = path_format(joinFilePath)
         if isNew:
-            join_text(joinFilePath,file_list);
-            print('download <%s> fin,join file to %s' % (self.book_name,joinFilePath))
+            #join_text(joinFilePath,file_list)
+            join_text_gz(joinFilePath+'.gz',file_list)
+            print('download <%s> fin,join file to %s' % (self.book_name,joinFilePath+'.gz'))
+        if os.path.exists(joinFilePath):
+            if save_gzip(joinFilePath+'.gz',open_file(joinFilePath)):
+                os.remove(joinFilePath)
         else:
         #print(file_list)
             print('download <%s> fin' % (self.book_name))

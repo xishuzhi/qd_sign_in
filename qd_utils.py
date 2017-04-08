@@ -350,25 +350,44 @@ def getBookVolumeInfoJson(bookID):
 #合并文本
 def join_text(name,file_list):
     try:
-        with open(name, 'w',encoding='utf-8') as f:
+        with open(name, 'w', encoding='utf-8') as f:
             for i in file_list:
-                t = path_format(str(i))
-                if os.path.exists(t):
-                    with open(t, 'r',encoding='utf-8') as a:
-                        f.write(a.read())
-                        f.write('\n')
-                        f.write('\n')
-                        a.close()
-                elif os.path.exists(t+'.gz'):
-                    with gzip.open(t+'.gz', 'rb') as a:
-                        data = a.read().decode('utf-8')
-                        f.write(data)
-                        f.write('\n')
-                        f.write('\n')
-                        a.close
+                    t = path_format(str(i))
+                    if os.path.exists(t):
+                        with open(t, 'r', encoding='utf-8') as a:
+                            f.write(a.read())
+                            f.write('\n')
+                            f.write('\n')
+                            a.close()
+                    elif os.path.exists(t+'.gz'):
+                        with gzip.open(t+'.gz', 'rb') as a:
+                            data = a.read().decode('utf-8')
+                            f.write(data)
+                            f.write('\n')
+                            f.write('\n')
+                            a.close
             f.close()
     except Exception as e:
         print('join_text_error : %s : %s' % (f,e))
+        pass
+def join_text_gz(name, file_list):
+    try:
+        with gzip.open(name, 'w') as f:
+            for i in file_list:
+                t = path_format(str(i))
+                if os.path.exists(t):
+                    with open(t, 'r', encoding='utf-8') as a:
+                        txt = a.read()+'\n\n'
+                        f.write(txt.encode('utf-8'))
+                        a.close()
+                elif os.path.exists(t + '.gz'):
+                    with gzip.open(t + '.gz', 'rb') as a:
+                        txt = a.read().decode('utf-8')+'\n\n'
+                        f.write(txt.encode('utf-8'))
+                        a.close
+            f.close()
+    except Exception as e:
+        print('join_text_error : %s : %s' % (f, e))
         pass
 #获取客户端形式的的JSON结果，适用于免费章节
 def getTextData(bookID,ChepterID):

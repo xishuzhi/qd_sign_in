@@ -51,7 +51,19 @@ def get_limit_list():
         book.append(data)
     #print(book)
     return book
-
+def get_m_list():
+    fp = request.urlopen("https://m.qidian.com/")
+    html = fp.read()
+    metaSoup = BeautifulSoup(html, "html.parser")
+    book_info_list = metaSoup.findAll('div', attrs={'class': 'module-slide-li'})
+    print(metaSoup)
+    book = []
+    for i in book_info_list:
+        print(i)
+        # data = {'name':i.h4.get_text(),'url':'http:' + i.h4.a['href']+"#Catalog",'id':i.h4.a['data-bid']}
+        # book.append(data)
+    #print(book)
+    return book
 #打开链接获取页面源码
 def get_html(url,count=0):
     try:
@@ -208,4 +220,7 @@ def main():
 
 if __name__ == '__main__':
     print(os.name)
-    main()
+    #main()
+    #get_m_list()
+    html = get_html('http://m.qidian.com/book/1003741750/catalog')
+    print(html)
