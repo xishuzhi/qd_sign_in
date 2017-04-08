@@ -62,7 +62,7 @@ class downloadbook_to_gzip(Thread):
         self.book_volumes_json = book_volumes_json
         self.book_info_json = book_info_json
         self.dir_path = dir_path
-        self.is_free_limit = is_free_limit
+        self.is_free_limit = str(is_free_limit)
     def run(self):
         self.dir_path = path_format(self.dir_path)
         if not os.path.exists(self.dir_path):
@@ -88,7 +88,8 @@ class downloadbook_to_gzip(Thread):
             v_name = i['v_name']
             v_url = i['v_url']
             v_cid = i['v_cid']
-            v_vip = i['v_vip']
+            v_vip = str(i['v_vip'])
+            #print('v_vip = %s,type=%s'% (v_vip,type(v_vip)))
             #f_name = self.dir_path+'\\'+self.qd_func.replace_file_path(v_name)+'.txt'
             f_name = self.dir_path + '\\' + str(v_cid) + '.txt'
             gz_name = self.dir_path + '\\' + str(v_cid) + '.txt.gz'
@@ -99,7 +100,10 @@ class downloadbook_to_gzip(Thread):
             file_list.append(f_name)
             i_name = self.dir_path + '\\book_info.txt'
             i_name = path_format(i_name)
-            info_str += '%s.txt ---> %s\n' % (str(v_cid),v_name)
+            if v_vip == '1':
+                info_str += '%s.txt ---> %s (VIP)\n' % (str(v_cid),v_name)
+            else:
+                info_str += '%s.txt ---> %s\n' % (str(v_cid), v_name)
             if os.path.exists(f_name) and os.path.getsize(f_name) > 100 or os.path.exists(f_name+'.html') and os.path.getsize(f_name+'.html') > 100:
                 #print('pass <%s> ---> %s' % (self.book_name,v_name))
                 text_data = open_file(f_name)
@@ -116,7 +120,10 @@ class downloadbook_to_gzip(Thread):
                     else:
                         os.remove(f_name + '.html')
                 pass
-            elif (os.path.exists(gz_name) and os.path.getsize(gz_name) > 100) or (self.is_free_limit == -1 and v_vip == 1):
+            elif os.path.exists(gz_name) and os.path.getsize(gz_name) > 100:
+                pass
+            elif self.is_free_limit == '-1' and v_vip == '1':
+                #print('is_free_limit = %s' % self.is_free_limit)
                 pass
             else:
                 tital, text, html = get_volume(v_url)
