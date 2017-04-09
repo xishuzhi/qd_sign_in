@@ -181,6 +181,29 @@ def start_by_id_list(book_id_list,block = 6):
         for i in thread_run:
             if not i.isAlive():
                 thread_run.remove(i)
+def start_by_list_file():
+    path = getPath()+'\\list.txt'
+    list_path = path_format(path)
+    print('查找%s文件' % list_path)
+    if os.path.exists(list_path):
+        txt = open_file(list_path)
+        id_list = parse_id_str(txt)
+        start_by_id_list(id_list)
+    else:
+        print('找不到list.txt文件')
+
+def parse_id_str(txt):
+    id_list = []
+    if len(txt) > 0:
+        list = txt.split('\n')
+        list2 = txt.split(',')
+        for i in list:
+            if i.isdigit() and int(i) > 0:
+                id_list.append(i)
+        for j in list2:
+            if j.isdigit() and int(j) > 0:
+                id_list.append(j)
+    return id_list
 
 
 def start_xm():
@@ -209,7 +232,9 @@ def menu():
     #os.popen('cls')
     #os.system('cls')
     print ('输入书籍ID下载：')
+    print('输入多个ID下载，以,分隔：')
     print('输f下载当前限免书籍：')
+    print('输l下载list.txt中的书籍：')
     print ('x. 退出')
     selection = input('输入书籍ID：')
     return selection
@@ -219,19 +244,22 @@ def start_main():
         while True:
             selection = menu()
             s_l = str(selection).split(',')
-            if len(s_l) > 0:
+            if selection.isdigit() and int(selection) > 0:
+                start_by_id(selection)
+            elif selection == 'f' or selection == 'F':
+                start_xm()
+                break
+            elif selection == 'l' or selection == 'L':
+                start_by_list_file()
+                break
+            elif selection == 'x' or selection == 'X':
+                break
+            elif len(s_l) > 0:
                 id_list = []
                 for i in s_l:
                     if i.isdigit() and int(i) > 0:
                         id_list.append(i)
                 start_by_id_list(id_list)
-            elif selection.isdigit() and int(selection) > 0:
-                start_by_id(selection)
-            elif selection == 'f' or selection == 'F':
-                start_xm()
-                break
-            elif selection == 'x' or selection == 'X':
-                break
             else:
                 print('输入错误！')
         print ('exit')
