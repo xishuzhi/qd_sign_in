@@ -120,7 +120,7 @@ class downloadbook_to_gzip(Thread):
                     else:
                         os.remove(f_name + '.html')
                 pass
-            elif os.path.exists(gz_name) and os.path.getsize(gz_name) > 100:
+            elif os.path.exists(gz_name) and os.path.getsize(gz_name) > 50:
                 pass
             elif self.is_free_limit == '-1' and v_vip == '1':
                 #print('is_free_limit = %s' % self.is_free_limit)
