@@ -162,6 +162,26 @@ def start_by_id(book_id):
     t.start()
     t.join()
 
+def start_by_id_list(book_id_list,block = 6):
+    tasks = []
+    thread_run = []
+    for id in book_id_list:
+        pass
+        book_info_data, book_info_json, is_free_limit = getBookVolumeInfoJson(id)
+        book_name = book_info_json['Data']['BookName']
+        book_path = getPath()+'\\'+book_name
+        book_path = path_format(book_path)
+        t = downloadbook_to_gzip(book_name, book_info_data, book_info_json, book_path,is_free_limit)
+        tasks.append(t)
+    while len(thread_run) > 0 or len(tasks) > 0:
+        if len(thread_run) < block and len(tasks) > 0:
+            task = tasks.pop()
+            thread_run.append(task)
+            task.start()
+        for i in thread_run:
+            if not i.isAlive():
+                thread_run.remove(i)
+
 
 def start_xm():
     # r = 'https://vipreader.qidian.com/chapter/%s/%s'
@@ -198,7 +218,14 @@ def start_main():
     try:
         while True:
             selection = menu()
-            if selection.isdigit() and int(selection) > 0:
+            s_l = str(selection).split(',')
+            if len(s_l) > 0:
+                id_list = []
+                for i in s_l:
+                    if i.isdigit() and int(i) > 0:
+                        id_list.append(i)
+                start_by_id_list(id_list)
+            elif selection.isdigit() and int(selection) > 0:
                 start_by_id(selection)
             elif selection == 'f' or selection == 'F':
                 start_xm()
