@@ -154,13 +154,15 @@ class downloadbook_to_gzip(Thread):
 
 def start_by_id(book_id):
     book_info_data, book_info_json, is_free_limit = getBookVolumeInfoJson(book_id)
-    book_name = book_info_json['Data']['BookName']
-    book_path = getPath()+'\\'+book_name
-    book_path = path_format(book_path)
-    #t = downloadbook_by_json(book_name, book_info_data, book_info_json, book_path)
-    t = downloadbook_to_gzip(book_name, book_info_data, book_info_json, book_path,is_free_limit)
-    t.start()
-    t.join()
+    if book_info_json['Message'] == '成功':
+        book_name = book_info_json['Data']['BookName']
+        book_path = getPath()+'\\'+book_name
+        book_path = path_format(book_path)
+        #t = downloadbook_by_json(book_name, book_info_data, book_info_json, book_path)
+        t = downloadbook_to_gzip(book_name, book_info_data, book_info_json, book_path,is_free_limit)
+        t.start()
+        t.join()
+
 
 def start_by_id_list(book_id_list,block = 6):
     tasks = []

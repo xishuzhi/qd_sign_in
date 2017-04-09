@@ -324,31 +324,35 @@ def getBookInfoData(bookID):
     #print(response.info())
     html = gzip.decompress(data).decode("utf-8")
     #print(html)
-    json_data =  json.loads(html)
+    json_data = json.loads(html)
     return json_data
 #整理过的的json，原始json，是否限免
 #获取章节详细信息 return [{'v_vip': 0, 'v_cid': 0000000, 'v_name': '章节名', 'v_url': 'https://vipreader.qidian.com/chapter/书ID_id/章节ID_cid'}, ]
 def getBookVolumeInfoJson(bookID):
     book_id = bookID
     book_info_json = getBookInfoData(book_id)
-    Data = book_info_json['Data']
-    Volumes = Data['Volumes']
-    Chapters = Data['Chapters']
-    is_free_limit = Data['IsFreeLimit']
-    book_info_data = []
-    count = 0
-    for c in Chapters:
-        volume_name = c['n']
-        volume_cid = c['c']
-        volume_vip = c['v']
-        volume_url = 'https://vipreader.qidian.com/chapter/%s/%s' % (book_id, volume_cid)
-        if volume_cid > 0:
-            book_info_data.append(
-                {'v_name': volume_name, 'v_cid': volume_cid, 'v_vip': volume_vip, 'v_url': volume_url,'count':count})
-        count += 1
-            # print('章节名：%s，章节ID：%s，vip：%s' % (volume_name,volume_cid,volume_vip))
-    #print(book_info_data)
-    return book_info_data,book_info_json,is_free_limit
+    if book_info_json['Message'] == '成功':
+        Data = book_info_json['Data']
+        Volumes = Data['Volumes']
+        Chapters = Data['Chapters']
+        is_free_limit = Data['IsFreeLimit']
+        book_info_data = []
+        count = 0
+        for c in Chapters:
+            volume_name = c['n']
+            volume_cid = c['c']
+            volume_vip = c['v']
+            volume_url = 'https://vipreader.qidian.com/chapter/%s/%s' % (book_id, volume_cid)
+            if volume_cid > 0:
+                book_info_data.append(
+                    {'v_name': volume_name, 'v_cid': volume_cid, 'v_vip': volume_vip, 'v_url': volume_url,'count':count})
+            count += 1
+                # print('章节名：%s，章节ID：%s，vip：%s' % (volume_name,volume_cid,volume_vip))
+        #print(book_info_data)
+        return book_info_data,book_info_json,is_free_limit
+    else:
+        print('ID=%s的书籍不存在！' % bookID)
+    return [],book_info_json,''
 #合并文本
 def join_text(name,file_list):
     try:
