@@ -2,7 +2,9 @@ from qd_utils import *
 from bs4 import BeautifulSoup
 from threading import Thread
 import requests
-
+import re
+import html
+from html.parser import HTMLParser
 
 class td(Thread):
     def __init__(self, book_name,url,dir_path):
@@ -199,7 +201,9 @@ def get_text(url):
     try:
         bs = BeautifulSoup(html, 'html.parser')
         textList = bs.find('div', attrs={'class': 'novelContent'})
+        print(textList)
         txt = textList.get_text()
+        print(len(txt))
         if len(txt) < 100:
             textP = bs.find_all('p')
             txt = ''
@@ -207,6 +211,38 @@ def get_text(url):
                 #print(i.string)
                 txt += i.string
                 txt += '\n'
+        else:
+            print('get_text:'+txt)
+        print(len(txt))
+        if len(txt) < 100:
+            txt = html
+            p_s = txt.find('''<div class="novelContent">''')
+            p_e = -1
+            if p_s > 0:
+                txt = txt[p_s:]
+                #print(txt)
+                p_e = txt.find('</div>')
+                if p_e > 0:
+                    txt = txt[:p_e+6]
+                    print('0000000000000000')
+                    url_re = re.compile(r'<.+?>')
+                    results = re.findall(url_re, txt)
+                    a = list({re.sub('\d', '', i): i for i in results}.values())
+                    tab = dict((x, '') for x in a)
+                    txt_list = txt.split('\n')
+                    #print(txt_list)
+                    xx=''
+                    for i in txt_list:
+                        for j in a:
+                            #print(i.replace(j,''))
+                            xx+=i.replace(j,'')
+                    print(xx)
+                    # for result in results:
+                    #     #print(result)
+                    #     txt.replace(result,'')
+                    #     print(txt)
+        else:
+            print('p:' + txt)
         return txt
     except Exception as e:
         print(e)
@@ -216,14 +252,15 @@ def replace_str(text):
     text = text.strip()
     text = text.lstrip()
     return text
+
+
 if __name__ == "__main__":
     pass
-    main_t()
+    #main_t()
     #post_get('http://www.55rere.com/se/dushijiqing/20110212/1480.html')
     #print(get_text('http://www.55rere.com/se/dushijiqing/525368.html'))
-    # t = get_text('http://www.55rere.com/se/dushijiqing/20110212/1480.html')
-    # print(t)
-
+    t = get_text('http://www.55rere.com/se/dushijiqing/526913.html')
+    #print(t)
 
 
 
