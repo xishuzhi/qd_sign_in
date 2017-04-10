@@ -1,7 +1,7 @@
 from qd_utils import *
 from bs4 import BeautifulSoup
 from threading import Thread
-
+import requests
 
 
 class td(Thread):
@@ -13,11 +13,10 @@ class td(Thread):
     def run(self):
         try:
             file_path = self.dir_path+'\\'+ replace_file_path(self.book_name)+'.txt'
-            if os.path.exists(file_path) and os.path.getsize(file_path) > 100:
+            if os.path.exists(file_path) and os.path.getsize(file_path) > 40:
                 #print('pass : %s')
                 pass
             else:
-
                 txt = get_text(self.url)
                 if len(txt) > 0 and txt != '404':
                     str = self.book_name
@@ -45,7 +44,7 @@ def main_t():
         count+=1
     #print('count='+str(count))
 
-    blocks = 26
+    blocks = 5
     task_index = 0
     threads = []
 
@@ -131,7 +130,7 @@ def main2():
     print('+1')
 
 def get_book_list():
-    d = open_file(r'D:\code\PyCharm\qd_sign_in\se\all.txt')
+    d = open_file(getPath()+'\\se\\all.txt')#r'D:\code\PyCharm\qd_sign_in\se\all.txt'
     #print(d)
     dd = d.split('\n')
     book_list = []
@@ -139,7 +138,11 @@ def get_book_list():
         # print(line)
         if len(line) > 0:
             s = line.split(',')
-            book_list.append({'name': s[0][6:], 'url': s[1][6:]})
+            if len(s) == 2:
+                book_list.append({'name': s[0][6:], 'url': s[1][6:]})
+            elif len(s) == 3:
+                n = s[0][6:]+s[1]
+                book_list.append({'name': n, 'url': s[2][6:]})
     #print(book_list)
     return book_list
 
@@ -174,14 +177,37 @@ def get_html_se(url,count=0):
             return '404'
         return get_html_se(url,count+1)
     return html
+
+def post_get(url):
+    pass
+    headers = {'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+               'Accept-Encoding': 'gzip, deflate, compress',
+               'Accept-Language': 'en-us;q=0.5,en;q=0.3',
+               'Cache-Control': 'max-age=0',
+               'Connection': 'keep-alive',
+               'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:22.0) Gecko/20100101 Firefox/22.0'}
+    r = requests.get(url,timeout=60)
+    # print(r.headers['content-type'])
+    # print(r.encoding)
+    # print(r.text.encode(r.encoding).decode('utf-8'))
+    return r.text.encode(r.encoding).decode('utf-8')
+
 def get_text(url):
-    html = get_html_se(url)
+    #html = get_html_se(url)
+    html = post_get(url)
     #print(html)
     try:
         bs = BeautifulSoup(html, 'html.parser')
         textList = bs.find('div', attrs={'class': 'novelContent'})
-        #print(textList)
-        return textList.get_text()
+        txt = textList.get_text()
+        if len(txt) < 100:
+            textP = bs.find_all('p')
+            txt = ''
+            for i in textP:
+                #print(i.string)
+                txt += i.string
+                txt += '\n'
+        return txt
     except Exception as e:
         print(e)
 def replace_str(text):
@@ -193,7 +219,11 @@ def replace_str(text):
 if __name__ == "__main__":
     pass
     main_t()
+    #post_get('http://www.55rere.com/se/dushijiqing/20110212/1480.html')
     #print(get_text('http://www.55rere.com/se/dushijiqing/525368.html'))
+    # t = get_text('http://www.55rere.com/se/dushijiqing/20110212/1480.html')
+    # print(t)
+
 
 
 

@@ -1,6 +1,6 @@
 from qd_utils import *
 from threading import Thread
-
+from sys import exit
 
 class downloadbook_by_json(Thread):
     def __init__(self,book_name,book_volumes_json,book_info_json,dir_path,is_free_limit=-1):
@@ -233,11 +233,11 @@ def start_xm():
 def menu():
     #os.popen('cls')
     #os.system('cls')
-    print ('输入书籍ID下载：')
+    print('输入书籍ID下载：')
     print('输入多个ID下载，以,分隔：')
     print('输f下载当前限免书籍：')
     print('输l下载list.txt中的书籍：')
-    print ('x. 退出')
+    print('x. 退出')
     selection = input('输入书籍ID：')
     return selection
 
@@ -250,12 +250,10 @@ def start_main():
                 start_by_id(selection)
             elif selection == 'f' or selection == 'F':
                 start_xm()
-                break
             elif selection == 'l' or selection == 'L':
                 start_by_list_file()
-                break
             elif selection == 'x' or selection == 'X':
-                break
+                exit(0)
             elif len(s_l) > 0:
                 id_list = []
                 for i in s_l:
@@ -267,11 +265,15 @@ def start_main():
         print ('exit')
     except Exception as e:
         print ('Error: %s,%s' % (selection,e))
-    pass
+        return start_main()
+    finally:
+        pass
+
 
 def main():
     if os.path.exists('autodownload.config') or os.path.exists('auto_download.config'):
         start_xm()
+        start_main()
     else:
         start_main()
 if __name__ == "__main__":
