@@ -30,8 +30,6 @@ def open_zip(path,z_name,f_name):
         l = zip.namelist()
         if f_name in l:
             return zip.read(f_name).decode('utf-8')
-
-
     pass
 def create_archive_url(path,zip_name,file_name,url):
     zip_file_name = '%s\\%s.zip' % (path,zip_name)
@@ -63,8 +61,9 @@ def read_archive_url(path,zip_name,file_name):
     # t = zip.read(file_name)
     # print(t.decode('utf-8'))
     zip.close()
-create_archive_url(getPath(),'test.zip','f1.txt','https://book.qidian.com/info/1004150862')
-add_archive_url(getPath(),'test.zip','f2.txt','https://book.qidian.com/info/1004881070')
-add_archive_url(getPath(),'test.zip','f3.txt','https://book.qidian.com/info/3478880')
-read_archive_url(getPath(),'test.zip','f1.txt')
+# create_archive_url(getPath(),'test.zip','f1.txt','https://book.qidian.com/info/1004150862')
+# add_archive_url(getPath(),'test.zip','f2.txt','https://book.qidian.com/info/1004881070')
+# add_archive_url(getPath(),'test.zip','f3.txt','https://book.qidian.com/info/3478880')
+# read_archive_url(getPath(),'test.zip','f1.txt')
 
+print(open_zip(getPath(),'test.zip','f1.txt'))
