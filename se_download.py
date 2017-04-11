@@ -33,8 +33,8 @@ class td(Thread):
         except Exception as e:
             print(e)
 
-def main_t():
-    l = get_book_list()
+def start_download():
+    l = get_book_list_from_all()
     path = getPath() + '\\se'
     tasks = []
     count = 0
@@ -45,11 +45,9 @@ def main_t():
         tasks.append(td(name,url,path))
         count+=1
     #print('count='+str(count))
-
     blocks = 5
     task_index = 0
     threads = []
-
     while len(tasks) > 0 or len(threads) > 0:
         #print('tasks=%d,threads=%d' %(len(tasks),len(threads)))
         if len(threads) < blocks and len(tasks) > 0:
@@ -62,18 +60,37 @@ def main_t():
                 threads.remove(i)
                 #break
 
-def set_url_list():
-    url = 'http://www.55rere.com/se/dushijiqing/index.html'
-    url2 = 'http://www.55rere.com/se/dushijiqing/index_%s.html'
+def set_url_list_from_se():
+    # url = 'http://www.55rere.com/se/dushijiqing/index.html'
+    # url2 = 'http://www.55rere.com/se/dushijiqing/index_%s.html'
+    # url = r'http://www.55rere.com/se/changpianlianzai/'
+    # url2 = 'http://www.55rere.com/se/changpianlianzai/index_%s.html'
+    url = r'http://www.55rere.com/se/jiatingluanlun/'
+    url2 = 'http://www.55rere.com/se/jiatingluanlun/index_%s.html'
     url_list = []
     url_list.append(url)
-    for i in range(2,226):
+    for i in range(2,154):
         url_list.append(url2 % i)
     # #print(url_list)
     return url_list
-
+def get_book_list_from_all():
+    d = open_file(getPath()+'\\se\\all.txt')#r'D:\code\PyCharm\qd_sign_in\se\all.txt'
+    #print(d)
+    dd = d.split('\n')
+    book_list = []
+    for line in dd:
+        # print(line)
+        if len(line) > 0:
+            s = line.split(',')
+            if len(s) == 2:
+                book_list.append({'name': s[0][6:], 'url': s[1][6:]})
+            elif len(s) == 3:
+                n = s[0][6:]+s[1]
+                book_list.append({'name': n, 'url': s[2][6:]})
+    #print(book_list)
+    return book_list
 def main():
-    l = get_book_list()
+    l = get_book_list_from_all()
     path = getPath()+'\\se'
     tasks = []
     for i in l:
@@ -96,9 +113,9 @@ def main():
         except Exception as e:
             print(e)
 
-def main2():
+def hb_from_file():
     print('start')
-    url_list = set_url_list()
+    url_list = set_url_list_from_se()
     u_l = []
     u_s = ''
     count = 0
@@ -111,7 +128,7 @@ def main2():
             print('跳过：%s'%f)
             pass
         else:
-            html = get_html(url)
+            html = get_html(url)#post_get(url)
             #print(url)
             try:
                 bs = BeautifulSoup(html, 'html.parser')
@@ -131,22 +148,7 @@ def main2():
         count += 1
     print('+1')
 
-def get_book_list():
-    d = open_file(getPath()+'\\se\\all.txt')#r'D:\code\PyCharm\qd_sign_in\se\all.txt'
-    #print(d)
-    dd = d.split('\n')
-    book_list = []
-    for line in dd:
-        # print(line)
-        if len(line) > 0:
-            s = line.split(',')
-            if len(s) == 2:
-                book_list.append({'name': s[0][6:], 'url': s[1][6:]})
-            elif len(s) == 3:
-                n = s[0][6:]+s[1]
-                book_list.append({'name': n, 'url': s[2][6:]})
-    #print(book_list)
-    return book_list
+
 
 def join_text_all():
     path = getPath()+'\\se\\all.txt'
@@ -201,51 +203,34 @@ def get_text(url):
     try:
         bs = BeautifulSoup(html, 'html.parser')
         textList = bs.find('div', attrs={'class': 'novelContent'})
-        print(textList)
         txt = textList.get_text()
-        print(len(txt))
         if len(txt) < 100:
             textP = bs.find_all('p')
             txt = ''
             for i in textP:
-                #print(i.string)
                 txt += i.string
                 txt += '\n'
-        else:
-            print('get_text:'+txt)
-        print(len(txt))
+    except Exception as e:
+        print('BeautifulSoup error :%s' % e)
+    try:
         if len(txt) < 100:
             txt = html
             p_s = txt.find('''<div class="novelContent">''')
             p_e = -1
             if p_s > 0:
                 txt = txt[p_s:]
-                #print(txt)
                 p_e = txt.find('</div>')
                 if p_e > 0:
                     txt = txt[:p_e+6]
-                    print('0000000000000000')
                     url_re = re.compile(r'<.+?>')
                     results = re.findall(url_re, txt)
                     a = list({re.sub('\d', '', i): i for i in results}.values())
-                    tab = dict((x, '') for x in a)
-                    txt_list = txt.split('\n')
-                    #print(txt_list)
-                    xx=''
-                    for i in txt_list:
-                        for j in a:
-                            #print(i.replace(j,''))
-                            xx+=i.replace(j,'')
-                    print(xx)
-                    # for result in results:
-                    #     #print(result)
-                    #     txt.replace(result,'')
-                    #     print(txt)
-        else:
-            print('p:' + txt)
+                    for i in a:
+                        txt = txt.replace(i,'')
         return txt
     except Exception as e:
-        print(e)
+        print('str error : ' % e)
+
 def replace_str(text):
     t = make_dict('ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ１２３４５６７８９０', 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890')
     text = text.translate(t)
@@ -256,10 +241,15 @@ def replace_str(text):
 
 if __name__ == "__main__":
     pass
-    #main_t()
+    # 1
+    #hb_from_file()
+    # 2
+    #join_text_all()
+    # 3
+    start_download()
     #post_get('http://www.55rere.com/se/dushijiqing/20110212/1480.html')
     #print(get_text('http://www.55rere.com/se/dushijiqing/525368.html'))
-    t = get_text('http://www.55rere.com/se/dushijiqing/526913.html')
+    #t = get_text('http://www.55rere.com/se/dushijiqing/526913.html')
     #print(t)
 
 
