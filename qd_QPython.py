@@ -236,6 +236,7 @@ def menu():
     print('输入书籍ID下载：')
     print('输入多个ID下载，以,分隔：')
     print('输f下载当前限免书籍：')
+    print('输t定时下载限免书籍')
     print('输l下载list.txt中的书籍：')
     print('x. 退出')
     selection = input('输入书籍ID：')
@@ -250,6 +251,12 @@ def start_main():
                 start_by_id(selection)
             elif selection == 'f' or selection == 'F':
                 start_xm()
+            elif selection == 't' or selection == 'T':
+                while True:
+                    start_xm()
+                    print('sleep 7200秒')
+                    time.sleep(7200)
+                    os.system('cls')
             elif selection == 'l' or selection == 'L':
                 start_by_list_file()
             elif selection == 'x' or selection == 'X':
