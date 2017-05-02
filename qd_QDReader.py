@@ -59,8 +59,8 @@ def getTextData(bookID,ChepterID):
         print("error:%s" % url)
     return result
 
-def loadData(url):
-    url = 'http://4g.if.qidian.com/Atom.axd/Api/Book/GetContent?BookId=1005194988&ChapterId=1005194988'
+def loadData():
+    url = 'http://4g.if.qidian.com/Atom.axd/Api/Book/GetContent?BookId=1004927985&ChapterId=351694601'
     request = urllib.request.Request(url)
     request.add_header('Accept-encoding', 'gzip')
     request.add_header('User-Agent', 'Mozilla QDReaderAndroid/6.2.0/232/qidian/000000000000000')
@@ -224,4 +224,5 @@ def get_limit_list():
 
 if __name__ == '__main__':
     main()
+
 

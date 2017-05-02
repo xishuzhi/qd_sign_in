@@ -1,5 +1,13 @@
 import zipfile
 from qd_utils import *
+class zip_utils():
+    def __init__(self,zip_file_path):
+        self.zip_file_path = zip_file_path
+        self.zip = None
+        # if os.path.exists(self.zip_file_path):
+        #     self.zip = zipfile.ZipFile(self.zip_file_path, 'a')
+        # else:
+        #     self.zip = zipfile.ZipFile(self.zip_file_path, 'w')
 
 
 def create_archive(path,name):
@@ -15,9 +23,9 @@ def create_archive(path,name):
             zip.write(html, 'OEBPS/' + basename, compress_type=zipfile.ZIP_DEFLATED)
     zip.close()
 
-def save_zip(path,z_name,f_name,f_data):
+def save_zip(path,z_name,f_name,f_data,cover=False):
     zip_file_name = path_format(path+'\\'+z_name)
-    if os.path.exists(zip_file_name):
+    if os.path.exists(zip_file_name) and cover == False:
         zip = zipfile.ZipFile(zip_file_name, 'a')
     else:
         zip = zipfile.ZipFile(zip_file_name, 'w')
@@ -32,7 +40,7 @@ def open_zip(path,z_name,f_name):
             return zip.read(f_name).decode('utf-8')
     pass
 def create_archive_url(path,zip_name,file_name,url):
-    zip_file_name = '%s\\%s.zip' % (path,zip_name)
+    zip_file_name = '%s\\%s' % (path,zip_name)
     os.chdir(path)
     #os.path.basename(name)
     txt = get_html(url)
@@ -40,7 +48,7 @@ def create_archive_url(path,zip_name,file_name,url):
     zip.writestr(file_name, txt, compress_type=zipfile.ZIP_DEFLATED)
     zip.close()
 def add_archive_url(path,zip_name,file_name,url):
-    zip_file_name = '%s\\%s.zip' % (path,zip_name)
+    zip_file_name = '%s\\%s' % (path,zip_name)
     os.chdir(path)
     #os.path.basename(name)
     txt = get_html(url)
@@ -48,7 +56,7 @@ def add_archive_url(path,zip_name,file_name,url):
     zip.writestr(file_name, txt, compress_type=zipfile.ZIP_DEFLATED)
     zip.close()
 def read_archive_url(path,zip_name,file_name):
-    zip_file_name = '%s\\%s.zip' % (path,zip_name)
+    zip_file_name = '%s\\%s' % (path,zip_name)
     os.chdir(path)
     #os.path.basename(name)
 
@@ -64,6 +72,6 @@ def read_archive_url(path,zip_name,file_name):
 # create_archive_url(getPath(),'test.zip','f1.txt','https://book.qidian.com/info/1004150862')
 # add_archive_url(getPath(),'test.zip','f2.txt','https://book.qidian.com/info/1004881070')
 # add_archive_url(getPath(),'test.zip','f3.txt','https://book.qidian.com/info/3478880')
-# read_archive_url(getPath(),'test.zip','f1.txt')
+read_archive_url(getPath(),'test.zip','f1.txt')
 
-print(open_zip(getPath(),'test.zip','f1.txt'))
+#print(open_zip(getPath(),'test.zip','f1.txt'))

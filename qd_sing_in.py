@@ -6,6 +6,7 @@ import traceback
 import logging
 import os
 
+
 ERROR = -1
 NEXT_DAY = 1
 FINISH = 2
@@ -127,6 +128,8 @@ def checkClick(br):
             time.sleep(600)
         if isNextDay:
             print('next day !')
+            import requests
+
             #br.refresh()
             open_qd(br)
             time.sleep(5)

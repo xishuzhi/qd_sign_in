@@ -152,6 +152,107 @@ class downloadbook_to_gzip(Thread):
         else:
             print('download <%s> fin' % (self.book_name))
 
+import zipfile
+class downloadbook_to_zip(Thread):
+    def __init__(self,book_name,book_volumes_json,book_info_json,dir_path,is_free_limit=-1):
+        Thread.__init__(self)
+        self.book_name = book_name
+        self.book_volumes_json = book_volumes_json
+        self.book_info_json = book_info_json
+        self.dir_path = dir_path
+        self.is_free_limit = str(is_free_limit)
+        self.zip = None
+    def run(self):
+        self.dir_path = path_format(self.dir_path)
+        zipFilePath = self.dir_path + '\\' + self.book_name + '.zip'
+        if not os.path.exists(self.dir_path):
+            os.mkdir(self.dir_path)
+            self.zip = zipfile.ZipFile(zipFilePath, 'w')
+        else:
+            self.zip = zipfile.ZipFile(zipFilePath, 'a')
+        if self.zip == None:
+            pass
+        namelist = self.zip.namelist()
+        if 'f1.txt' in namelist:
+            print('find f1.txt')
+        print('start download <%s>' % self.book_name )
+        f_info = path_format(self.dir_path+'\\'+'info_json.txt')
+        f_volumes = path_format(self.dir_path + '\\' + 'volumes_json.txt')
+        if os.path.exists(f_info):
+            os.remove(f_info)
+        if os.path.exists(f_volumes):
+            os.remove(f_volumes)
+        self.book_volumes_json.sort(key=lambda x: (x['count'], -x['count']))
+        save_gzip(f_info+'.gz', str(self.book_info_json))
+        save_gzip(f_volumes+'.gz', str(self.book_volumes_json))
+        info_str = self.book_name+'\n'
+        file_list = []
+        isNew = False
+        for i in self.book_volumes_json:
+            v_name = i['v_name']
+            v_url = i['v_url']
+            v_cid = i['v_cid']
+            v_vip = str(i['v_vip'])
+            f_name = self.dir_path + '\\' + str(v_cid) + '.txt'
+            gz_name = self.dir_path + '\\' + str(v_cid) + '.txt.gz'
+            gz_html = self.dir_path + '\\' + str(v_cid) + '.txt.html.gz'
+            f_name = path_format(f_name)
+            gz_name = path_format(gz_name)
+            gz_html = path_format(gz_html)
+            file_list.append(f_name)
+            i_name = self.dir_path + '\\book_info.txt'
+            i_name = path_format(i_name)
+            if v_vip == '1':
+                info_str += '%s.txt ---> %s (VIP)\n' % (str(v_cid),v_name)
+            else:
+                info_str += '%s.txt ---> %s\n' % (str(v_cid), v_name)
+            if os.path.exists(f_name) and os.path.getsize(f_name) > 100 or os.path.exists(f_name+'.html') and os.path.getsize(f_name+'.html') > 100:
+                text_data = open_file(f_name)
+                # 检查txt文件
+                if len(text_data) > 0:
+                    if save_gzip(gz_name,text_data):
+                        os.remove(f_name)
+                # 检查html文件
+                if os.path.exists(f_name + '.html'):
+                    html_data = open_file(f_name + '.html')
+                    if len(html_data) > 0:
+                        if save_gzip(gz_html, html_data):
+                            os.remove(f_name + '.html')
+                    else:
+                        os.remove(f_name + '.html')
+                pass
+            elif os.path.exists(gz_name) and os.path.getsize(gz_name) > 50:
+                pass
+            elif self.is_free_limit == '-1' and v_vip == '1':
+                #print('is_free_limit = %s' % self.is_free_limit)
+                pass
+            else:
+                tital, text, html = get_volume(v_url)
+                print('download <%s> ---> %s' % (self.book_name,tital))
+
+                save_gzip(gz_name,text)
+                isNew = True
+                if os.path.exists('savehtml.config') or os.path.exists('save_html.config'):
+
+                    save_gzip(gz_html,html)
+
+        #save_file(i_name, info_str)
+        if os.path.exists(i_name):
+            os.remove(i_name)
+        save_gzip(i_name+'.gz', info_str)
+        joinFilePath = self.dir_path+'\\'+self.book_name+'.txt'
+        joinFilePath = path_format(joinFilePath)
+        if isNew or not os.path.exists(joinFilePath+'.gz'):
+            #join_text(joinFilePath,file_list)
+            join_text_gz(joinFilePath+'.gz',file_list)
+            print('download <%s> fin,join file to %s' % (self.book_name,joinFilePath+'.gz'))
+        # 没有更新但是有txt文件存在，打包删除txt
+        if os.path.exists(joinFilePath):
+            if save_gzip(joinFilePath+'.gz',open_file(joinFilePath)):
+                os.remove(joinFilePath)
+        else:
+            print('download <%s> fin' % (self.book_name))
+
 def start_by_id(book_id):
     book_info_data, book_info_json, is_free_limit = getBookVolumeInfoJson(book_id)
     if book_info_json['Message'] == '成功':
@@ -285,4 +386,9 @@ def main():
         start_main()
 if __name__ == "__main__":
     main()
+    # book_info_data, book_info_json, is_free_limit = getBookVolumeInfoJson(1004927985)
+    # print(book_info_data)
+    #print(book_info_json)
+    #print(book_info_data)
+
 

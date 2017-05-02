@@ -62,9 +62,9 @@ def get_limit_list():
     book = []
     for i in book_info_list:
         id_link = i.h4.a['href']
-        id = id_link.split('/')[-1]
+        id = i.h4.a['data-bid']
         #print(id_link.split('/')[-1])
-        data = {'name':i.h4.get_text(),'url':'http:' + id_link+"#Catalog",'id':id}
+        data = {'name':i.h4.get_text(),'url':'https://book.qidian.com/info/' + id+"#Catalog",'id':id}
         book.append(data)
     #print(book)
     return book
@@ -315,7 +315,9 @@ def getBookInfoData(bookID):
     url = 'http://4g.if.qidian.com/Atom.axd/Api/Book/GetChapterList?BookId=%s' % bookID
     req = request.Request(url)
     req.add_header('Accept-encoding', 'gzip')
-    req.add_header('User-Agent', 'Mozilla QDReaderAndroid/6.2.0/232/qidian/000000000000000')
+    req.add_header('User-Agent', 'Mozilla/mobile QDReaderAndroid/6.6.6/269/qidian/000000000000000')
+    #req.add_header('User-Agent', 'Mozilla QDReaderAndroid/6.2.0/232/qidian/000000000000000')
+    #req.add_header('User-Agent','Mozilla/mobile QDReaderAndroid/6.6.0/264/1000023/000000000000000')
 
     response = request.urlopen(req)
     #print(response.read())
@@ -418,6 +420,7 @@ if __name__ == "__main__":
     # print(get_book_by_id(1005188549))
     # #测试，从限免章节页面获取书籍名称和目录章节
     # print(get_limit_list())
+    # print(getBookInfoData(1005188549))
     # #测试，用浏览器打开目录，获取书名作者总章节
     # print(get_book_info(get_html_by_browser('http://book.qidian.com/info/3600493#Catalog')))
     # 获取书籍的章节和连接
