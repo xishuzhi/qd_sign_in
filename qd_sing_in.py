@@ -13,7 +13,8 @@ FINISH = 2
 
 # 打开起点签到页面函数
 def open_qd(browser):
-    url = "http://t.qidian.com/Profile/Score.php"
+    url = "http://my.qidian.com/level/"
+    url2 = 'http://my.qidian.com/'
     browser.get(url)
     time.sleep(5)
     try:
@@ -29,13 +30,14 @@ def open_qd(browser):
                 browser.find_element_by_css_selector("a.red-btn.go-login.btnLogin.login-button").click()
                 time.sleep(5)
         #print(browser.current_url)
-        while(browser.current_url != url):
+        while(browser.current_url != url and browser.current_url != url2):
             #print("等待登陆!!!")
             time.sleep(1)
         # 验证登录成功的url
         currUrl = browser.current_url
-        if currUrl == url:
+        if currUrl == url or currUrl == url2:
             print(u"success")
+            browser.get(url)
             return True
         else:
             print(u"failure")
@@ -73,7 +75,7 @@ def getTime(type):
     t = datetime.datetime.now().strftime(type)
     return t
 
-def checkClick(br):
+def checkClick_old(br):
     url = "http://t.qidian.com/Profile/Score.php"
 
     data_now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -134,14 +136,89 @@ def checkClick(br):
             open_qd(br)
             time.sleep(5)
 
+
+
+def checkClick(br):
+    url = "http://my.qidian.com/level/"
+    data_now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    print("star time :" + data_now)
+    data_now = datetime.datetime.now().strftime('%d')
+    isNextDay = False
+    sing_in_count = 0
+    while True:
+        os.system('cls')
+        now = datetime.datetime.now().strftime('%d')
+        this_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        print(this_time)
+        sing_in_count = 0
+        if str(data_now) != str(now):
+            data_now = now
+            isNextDay = True
+            br.refresh()
+            time.sleep(15)
+        if br.current_url == url:
+            i = 1
+            while i < 9:
+                try:
+                    btn = br.find_element_by_xpath('//*[@id="elTaskWrap"]/li[%s]' % i)
+                    if '领取' in btn.text and '已领取' not in btn.text:
+                        print('有可以领取的东西')
+                        bt = br.find_element_by_xpath('//*[@id="elTaskWrap"]/li[%s]/a' % i)
+                        bt.click()
+                        br.implicitly_wait(5)
+                        #br.maximize_window()
+                        btn.get(url)
+                        br.implicitly_wait(10)
+                    else:
+                        btned = br.find_element_by_xpath('//*[@id="elTaskWrap"]/li[%s]/span' % i)
+                        if btned.text[0:3] == '已领取':
+                            sing_in_count += 1
+                    print('sing_in_count = ' + str(sing_in_count))
+                    if sing_in_count == 8:
+                        br.get('http://my.qidian.com')
+                except:
+                    pass
+                finally:
+                    i = i + 1
+            writeLog()
+            print("............")
+            br.refresh()
+            time.sleep(15)
+            return checkClick(br)
+        else:
+            print('sleep 600s')
+            time.sleep(600)
+        if isNextDay:
+            print('next day !')
+            open_qd(br)
+            time.sleep(5)
+
 if __name__ == "__main__":
     browser = webdriver.Chrome()
     start_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     # global log_str
     # log_str = "start time :%s\n" % start_time
+    # ------------------------------
     if open_qd(browser):
         checkClick(browser)
     browser.quit()
+    # -------------------------------
+    # browser.get('http://192.168.0.25/qidian.html')
+    # i = 1
+    # while i < 6:
+    #     try:
+    #         btn = browser.find_element_by_xpath('//*[@id="elTaskWrap"]/li[%s]' % i)
+    #         print("ID=%s ,type = %s" % (i,(btn.text)))
+    #         if '领取' in btn.text:
+    #             print('有可以领取的东西')
+    #
+    #     except:
+    #         pass
+    #     finally:
+    #         i = i + 1
+    # browser.quit()
+
+
 
 
 """
@@ -171,5 +248,24 @@ x
 iedriver = r"F:\temp\IEDriverServer.exe"
 os.environ["webdriver.ie.driver"] = iedriver
 browser = webdriver.Ie(iedriver)
+http://my.qidian.com/level
 
+
+#elTaskWrap > li:nth-child(1) > a
+
+//*[@id="elTaskWrap"]/li[1]/a
+
+//*[@id="elTaskWrap"]/li[2]/span
+
+//*[@id="elTaskWrap"]/li[1]/a
+
+//*[@id="elTaskWrap"]/li[3]/span
+
+//*[@id="elTaskWrap"]/li[2]/span
+
+<a href="javascript:;" class="ui-button ui-button-small elGetExp " data-num="1" data-timeleft="0" data-vip="2">领取</a>
+
+#elOldexp
+
+//*[@id="elOldexp"]
 """
