@@ -68,6 +68,30 @@ def get_limit_list():
         book.append(data)
     #print(book)
     return book
+def get_limit_list_from_qidian():
+    fp = request.urlopen("https://www.qidian.com/")
+    html = fp.read()
+    metaSoup = BeautifulSoup(html, "html.parser")
+    #print(metaSoup)
+    limit_list = metaSoup.find('ul', attrs={'id': 'numero5'})
+    #print(limit_list)
+    book_info_list = limit_list.findAll('div', attrs={'class': 'book-img'})
+    #print(book_info_list)
+    # for i in book_info_list:
+    #     print(i.a['href'])
+    #     print(i.a['data-bid'])
+    #     print(i.img['alt'])
+    book = []
+    for i in book_info_list:
+        id_link = i.a['href']
+        id = i.a['data-bid']
+        n = i.img['alt']
+        # print(id_link.split('/')[-1])
+        data = {'name': n, 'url': 'https://book.qidian.com/info/' + id + "#Catalog", 'id': id}
+        book.append(data)
+    # print(book)
+    return book
+
 #从书页源码中获取书名，作者，总章节数量，return 书名，作者，章节数量
 def get_book_info(text):
     if text:
@@ -416,6 +440,7 @@ def getTextData(bookID,ChepterID):
 
 if __name__ == "__main__":
     pass
+    print(get_limit_list_from_qidian())
     # #测试，根据id获取书籍名称和目录章节
     # print(get_book_by_id(1005188549))
     # #测试，从限免章节页面获取书籍名称和目录章节

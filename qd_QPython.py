@@ -312,7 +312,8 @@ def parse_id_str(txt):
 def start_xm():
     # r = 'https://vipreader.qidian.com/chapter/%s/%s'
     thisPath = getPath()
-    book_id_list = get_limit_list()
+    #book_id_list = get_limit_list()
+    book_id_list = get_limit_list_from_qidian()
     #print(book_id_list)
     tasks = []
     for info in book_id_list:
@@ -382,6 +383,12 @@ def main():
     if os.path.exists('autodownload.config') or os.path.exists('auto_download.config'):
         start_xm()
         start_main()
+    elif os.path.exists('t.config'):
+        while True:
+            start_xm()
+            print('sleep 7200秒')
+            time.sleep(7200)
+            os.system('cls')
     else:
         start_main()
 if __name__ == "__main__":
