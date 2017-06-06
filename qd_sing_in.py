@@ -58,14 +58,14 @@ def open_new(browser):
 
 # 写错误日志并截图
 def writeLog():
-    # # 组合日志文件名（当前文件名+当前时间）.比如：case_login_success_20150817192533
-    # basename = os.path.splitext(os.path.basename(__file__))[0]
-    # logFile = basename + "-" + datetime.datetime.now().strftime("%Y%m%d%H%M%S") + ".log"
-    # logging.basicConfig(filename=logFile)
-    # s = traceback.format_exc()
-    # logging.error(s)
-    # browser.get_screenshot_as_file("./" + logFile + "-screenshot_error.png")
-    #s = traceback.format_exc()
+    # 组合日志文件名（当前文件名+当前时间）.比如：case_login_success_20150817192533
+    basename = os.path.splitext(os.path.basename(__file__))[0]
+    logFile = basename + "-" + datetime.datetime.now().strftime("%Y%m%d%H%M%S") + ".log"
+    logging.basicConfig(filename=logFile)
+    s = traceback.format_exc()
+    logging.error(s)
+    browser.get_screenshot_as_file("./" + logFile + "-screenshot_error.png")
+    s = traceback.format_exc()
     #print(s)
     pass
 def printTime(type):
@@ -144,54 +144,57 @@ def checkClick(br):
     print("star time :" + data_now)
     data_now = datetime.datetime.now().strftime('%d')
     isNextDay = False
-    sing_in_count = 0
-    while True:
-        os.system('cls')
-        now = datetime.datetime.now().strftime('%d')
-        this_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        print(this_time)
-        sing_in_count = 0
-        if str(data_now) != str(now):
-            data_now = now
-            isNextDay = True
-            br.refresh()
-            time.sleep(15)
-        if br.current_url == url:
-            i = 1
-            while i < 9:
-                try:
-                    btn = br.find_element_by_xpath('//*[@id="elTaskWrap"]/li[%s]' % i)
-                    if '领取' in btn.text and '已领取' not in btn.text:
-                        print('有可以领取的东西')
-                        bt = br.find_element_by_xpath('//*[@id="elTaskWrap"]/li[%s]/a' % i)
-                        bt.click()
-                        br.implicitly_wait(5)
-                        #br.maximize_window()
-                        btn.get(url)
-                        br.implicitly_wait(10)
-                    else:
-                        btned = br.find_element_by_xpath('//*[@id="elTaskWrap"]/li[%s]/span' % i)
-                        if btned.text[0:3] == '已领取':
+    try:
+        while True:
+            os.system('cls')
+            now = datetime.datetime.now().strftime('%d')
+            this_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            print(this_time)
+            sing_in_count = 0
+            if str(data_now) != str(now):
+                data_now = now
+                isNextDay = True
+                br.refresh()
+                time.sleep(15)
+            if br.current_url == url:
+                btn = browser.find_elements_by_class_name('award-task-item')
+                # print(btn)
+                sum = 0
+                for i in btn:
+                    sum += 1
+                    res = i.text.split('\n')
+                    if len(res) == 3:
+                        print(res[2])
+                        if '领取' == res[2]:
+                            bt = i.find_element_by_xpath('//*[@id="elTaskWrap"]/li[%s]/a' % sum)
+                            bt.click()
+                            br.implicitly_wait(5)
+                        elif '已领取' == res[2]:
                             sing_in_count += 1
-                    print('sing_in_count = ' + str(sing_in_count))
-                    if sing_in_count == 8:
-                        br.get('http://my.qidian.com')
-                except:
-                    pass
-                finally:
-                    i = i + 1
-            writeLog()
-            print("............")
-            br.refresh()
-            time.sleep(15)
-            return checkClick(br)
-        else:
-            print('sleep 600s')
-            time.sleep(600)
-        if isNextDay:
-            print('next day !')
-            open_qd(br)
-            time.sleep(5)
+                    elif len(res) == 4:
+                        print(res[3])
+                        if '领取' == res[3]:
+                            bt = i.find_element_by_xpath('//*[@id="elTaskWrap"]/li[%s]/a' % sum)
+                            bt.click()
+                            br.implicitly_wait(5)
+                        elif '已领取' == res[3]:
+                            sing_in_count += 1
+
+                if sing_in_count == 8:
+                    br.get('http://my.qidian.com')
+                time.sleep(15)
+                #return checkClick(br)
+            else:
+                print('sleep 600s')
+                time.sleep(600)
+            if isNextDay:
+                print('next day !')
+                open_qd(br)
+                time.sleep(5)
+    except Exception as e:
+        print('end error : %s ' % e)
+        writeLog()
+        return checkClick(br)
 
 if __name__ == "__main__":
     browser = webdriver.Chrome()
@@ -203,11 +206,36 @@ if __name__ == "__main__":
         checkClick(browser)
     browser.quit()
     # -------------------------------
-    # browser.get('http://192.168.0.25/qidian.html')
+    # browser.get('http://192.168.0.25/qidian3.html')
+    # #btn = browser.find_element_by_xpath('//*[@id="elTaskWrap"]/li')
+    # try:
+    #     btn = browser.find_elements_by_class_name('award-task-item')
+    #     #print(btn)
+    #     sum = 0
+    #     for i in btn:
+    #         sum += 1
+    #         res = i.text.split('\n')
+    #         if len(res) == 3:
+    #             print(res[2])
+    #             if '领取' == res[2]:
+    #                 aaa = i.find_element_by_xpath('//*[@id="elTaskWrap"]/li[%s]/a' % sum)
+    #                 print('点击：'+aaa.text)
+    #             elif '已领取' ==  res[2]:
+    #                 pass
+    #
+    #         elif len(res) == 4:
+    #             print(res[3])
+    #             if '领取' == res[3]:
+    #                 aaa = i.find_element_by_xpath('//*[@id="elTaskWrap"]/li[%s]/a' % sum)
+    #                 print('点击：'+aaa.text)
+    #
+    #         #print("内容：%s，type:%s" % ((i.text.split('\n')),type(i.text)))
+    # except Exception as ex:
+    #     print(ex)
     # i = 1
     # while i < 6:
     #     try:
-    #         btn = browser.find_element_by_xpath('//*[@id="elTaskWrap"]/li[%s]' % i)
+    #         #btn = browser.find_element_by_xpath('//*[@id="elTaskWrap"]/li[%s]' % i)
     #         print("ID=%s ,type = %s" % (i,(btn.text)))
     #         if '领取' in btn.text:
     #             print('有可以领取的东西')
@@ -216,7 +244,7 @@ if __name__ == "__main__":
     #         pass
     #     finally:
     #         i = i + 1
-    # browser.quit()
+    #browser.quit()
 
 
 
