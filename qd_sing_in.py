@@ -13,8 +13,9 @@ FINISH = 2
 
 # 打开起点签到页面函数
 def open_qd(browser):
-    url = "http://my.qidian.com/level/"
-    url2 = 'http://my.qidian.com/'
+    url = "https://my.qidian.com/level/"
+    url2 = 'https://my.qidian.com/'
+    url3 = 'my.qidian.com'
     browser.get(url)
     time.sleep(5)
     try:
@@ -30,12 +31,12 @@ def open_qd(browser):
                 browser.find_element_by_css_selector("a.red-btn.go-login.btnLogin.login-button").click()
                 time.sleep(5)
         #print(browser.current_url)
-        while(browser.current_url != url and browser.current_url != url2):
+        while(browser.current_url != url and browser.current_url.find(url3) < 0):
             #print("等待登陆!!!")
             time.sleep(1)
         # 验证登录成功的url
         currUrl = browser.current_url
-        if currUrl == url or currUrl == url2:
+        if currUrl == url or currUrl.find(url3) > 0:
             print(u"success")
             browser.get(url)
             return True
@@ -48,7 +49,7 @@ def open_qd(browser):
         writeLog()
 
 def open_new(browser):
-    js = 'window.open("http://t.qidian.com/Profile/Score.php");'
+    js = 'window.open("https://t.qidian.com/Profile/Score.php");'
     browser.execute_script(js)
     handles = browser.window_handles
     for handle in handles:  # 切换窗口
@@ -58,15 +59,15 @@ def open_new(browser):
 
 # 写错误日志并截图
 def writeLog():
-    # 组合日志文件名（当前文件名+当前时间）.比如：case_login_success_20150817192533
-    basename = os.path.splitext(os.path.basename(__file__))[0]
-    logFile = basename + "-" + datetime.datetime.now().strftime("%Y%m%d%H%M%S") + ".log"
-    logging.basicConfig(filename=logFile)
-    s = traceback.format_exc()
-    logging.error(s)
-    browser.get_screenshot_as_file("./" + logFile + "-screenshot_error.png")
-    s = traceback.format_exc()
-    #print(s)
+    # # 组合日志文件名（当前文件名+当前时间）.比如：case_login_success_20150817192533
+    # basename = os.path.splitext(os.path.basename(__file__))[0]
+    # logFile = basename + "-" + datetime.datetime.now().strftime("%Y%m%d%H%M%S") + ".log"
+    # logging.basicConfig(filename=logFile)
+    # s = traceback.format_exc()
+    # logging.error(s)
+    # browser.get_screenshot_as_file("./" + logFile + "-screenshot_error.png")
+    # s = traceback.format_exc()
+    # #print(s)
     pass
 def printTime(type):
     t = datetime.datetime.now().strftime(type)
@@ -139,7 +140,7 @@ def checkClick_old(br):
 
 
 def checkClick(br):
-    url = "http://my.qidian.com/level/"
+    url = "https://my.qidian.com/level/"
     data_now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print("star time :" + data_now)
     data_now = datetime.datetime.now().strftime('%d')
@@ -181,7 +182,7 @@ def checkClick(br):
                             sing_in_count += 1
 
                 if sing_in_count == 8:
-                    br.get('http://my.qidian.com')
+                    br.get('https://my.qidian.com')
                 time.sleep(15)
                 #return checkClick(br)
             else:
