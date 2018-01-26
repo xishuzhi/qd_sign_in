@@ -29,9 +29,9 @@ def open_qd(browser):
                 time.sleep(1)
                 # 点击按钮提交登录表单
                 browser.find_element_by_css_selector("a.red-btn.go-login.btnLogin.login-button").click()
-                time.sleep(5)
+                time.sleep(15)
         #print(browser.current_url)
-        while(browser.current_url != url and browser.current_url.find(url3) < 0):
+        while(browser.current_url != url and browser.current_url.find(url2) < 0):
             #print("等待登陆!!!")
             time.sleep(1)
         # 验证登录成功的url
