@@ -2,8 +2,6 @@
 from selenium import webdriver
 import time
 import datetime
-import traceback
-import logging
 import os
 
 
@@ -11,11 +9,13 @@ ERROR = -1
 NEXT_DAY = 1
 FINISH = 2
 
+url = "https://my.qidian.com/level/"
+url2 = 'https://my.qidian.com/'
+url3 = 'my.qidian.com'
+
+
 # 打开起点签到页面函数
 def open_qd(browser):
-    url = "https://my.qidian.com/level/"
-    url2 = 'https://my.qidian.com/'
-    url3 = 'my.qidian.com'
     browser.get(url)
     time.sleep(5)
     try:
@@ -48,6 +48,7 @@ def open_qd(browser):
         print(u"failure")
         writeLog()
 
+
 def open_new(browser):
     js = 'window.open("https://t.qidian.com/Profile/Score.php");'
     browser.execute_script(js)
@@ -56,6 +57,7 @@ def open_new(browser):
         if handle != browser.current_window_handle:
             browser.switch_to_window(handle)
             break
+
 
 # 写错误日志并截图
 def writeLog():
@@ -72,75 +74,14 @@ def writeLog():
 def printTime(type):
     t = datetime.datetime.now().strftime(type)
     print(t)
+
+
 def getTime(type):
     t = datetime.datetime.now().strftime(type)
     return t
 
-def checkClick_old(br):
-    url = "http://t.qidian.com/Profile/Score.php"
-
-    data_now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print("star time :" + data_now)
-    data_now = datetime.datetime.now().strftime('%d')
-    isNextDay = False
-    sing_in_count = 0
-    while True:
-        os.system('cls')
-        now = datetime.datetime.now().strftime('%d')
-        this_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        print(this_time)
-        if str(data_now) != str(now):
-            data_now = now
-            isNextDay = True
-            br.refresh()
-            time.sleep(15)
-        if br.current_url == url:
-            try:
-                button_data = br.find_element_by_class_name("plus-items")
-                radios = button_data.find_elements_by_class_name("btn")
-                sing_in_count = 0
-                for bt in radios:
-                    print(bt.text)
-                    if bt.text == '可领取':
-                        print("点击")
-                        bt.click()
-                        isNextDay = False
-                        #time.sleep(5)
-                        br.implicitly_wait(5)
-                        br.maximize_window()
-                        #br.refresh()
-                        br.get(url)
-                        #time.sleep(10)
-                        br.implicitly_wait(10)
-                        #br.
-                    if bt.text[0:3] == '经验值':
-                        sing_in_count += 1
-                        #print('sing_in_count+1')
-                print('sing_in_count = '+str(sing_in_count))
-                if sing_in_count == 8:
-                    br.get('http://t.qidian.com')
-            except:
-                writeLog()
-                print("............")
-                br.refresh()
-                time.sleep(15)
-                return checkClick(br)
-            time.sleep(5)
-        else:
-            print('sleep 600s')
-            time.sleep(600)
-        if isNextDay:
-            print('next day !')
-            import requests
-
-            #br.refresh()
-            open_qd(br)
-            time.sleep(5)
-
-
 
 def checkClick(br):
-    url = "https://my.qidian.com/level/"
     data_now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print("star time :" + data_now)
     data_now = datetime.datetime.now().strftime('%d')
@@ -158,7 +99,7 @@ def checkClick(br):
                 br.refresh()
                 time.sleep(15)
             if br.current_url == url:
-                btn = browser.find_elements_by_class_name('award-task-item')
+                btn = br.find_elements_by_class_name('award-task-item')
                 # print(btn)
                 sum = 0
                 for i in btn:
@@ -197,55 +138,67 @@ def checkClick(br):
         writeLog()
         return checkClick(br)
 
-if __name__ == "__main__":
-    browser = webdriver.Chrome()
-    start_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    # global log_str
-    # log_str = "start time :%s\n" % start_time
-    # ------------------------------
+
+def main():
+    # test()
+    # browser = webdriver.Chrome()
+    browser = webdriver.Ie()
+
     if open_qd(browser):
         checkClick(browser)
     browser.quit()
-    # -------------------------------
-    # browser.get('http://192.168.0.25/qidian3.html')
-    # #btn = browser.find_element_by_xpath('//*[@id="elTaskWrap"]/li')
-    # try:
-    #     btn = browser.find_elements_by_class_name('award-task-item')
-    #     #print(btn)
-    #     sum = 0
-    #     for i in btn:
-    #         sum += 1
-    #         res = i.text.split('\n')
-    #         if len(res) == 3:
-    #             print(res[2])
-    #             if '领取' == res[2]:
-    #                 aaa = i.find_element_by_xpath('//*[@id="elTaskWrap"]/li[%s]/a' % sum)
-    #                 print('点击：'+aaa.text)
-    #             elif '已领取' ==  res[2]:
-    #                 pass
-    #
-    #         elif len(res) == 4:
-    #             print(res[3])
-    #             if '领取' == res[3]:
-    #                 aaa = i.find_element_by_xpath('//*[@id="elTaskWrap"]/li[%s]/a' % sum)
-    #                 print('点击：'+aaa.text)
-    #
-    #         #print("内容：%s，type:%s" % ((i.text.split('\n')),type(i.text)))
-    # except Exception as ex:
-    #     print(ex)
-    # i = 1
-    # while i < 6:
-    #     try:
-    #         #btn = browser.find_element_by_xpath('//*[@id="elTaskWrap"]/li[%s]' % i)
-    #         print("ID=%s ,type = %s" % (i,(btn.text)))
-    #         if '领取' in btn.text:
-    #             print('有可以领取的东西')
-    #
-    #     except:
-    #         pass
-    #     finally:
-    #         i = i + 1
-    #browser.quit()
+
+
+def test():
+    browser = webdriver.Ie()
+    # browser = webdriver.Chrome()
+    browser.get('http://192.168.0.25/qidian3.html')
+    # start_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    # global log_str
+    # log_str = "start time :%s\n" % start_time
+    #btn = browser.find_element_by_xpath('//*[@id="elTaskWrap"]/li')
+    try:
+        btn = browser.find_elements_by_class_name('award-task-item')
+        #print(btn)
+        sum = 0
+        for i in btn:
+            sum += 1
+            res = i.text.split('\n')
+            if len(res) == 3:
+                print(res[2])
+                if '领取' == res[2]:
+                    aaa = i.find_element_by_xpath('//*[@id="elTaskWrap"]/li[%s]/a' % sum)
+                    print('点击：'+aaa.text)
+                elif '已领取' ==  res[2]:
+                    pass
+
+            elif len(res) == 4:
+                print(res[3])
+                if '领取' == res[3]:
+                    aaa = i.find_element_by_xpath('//*[@id="elTaskWrap"]/li[%s]/a' % sum)
+                    print('点击：'+aaa.text)
+
+            #print("内容：%s，type:%s" % ((i.text.split('\n')),type(i.text)))
+    except Exception as ex:
+        print(ex)
+    i = 1
+    while i < 6:
+        try:
+            #btn = browser.find_element_by_xpath('//*[@id="elTaskWrap"]/li[%s]' % i)
+            print("ID=%s ,type = %s" % (i,(btn.text)))
+            if '领取' in btn.text:
+                print('有可以领取的东西')
+
+        except:
+            pass
+        finally:
+            i = i + 1
+    browser.quit()
+
+
+if __name__ == "__main__":
+    main()
+
 
 
 

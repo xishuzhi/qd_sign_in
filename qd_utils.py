@@ -57,6 +57,7 @@ def get_limit_list():
     metaSoup = BeautifulSoup(html, "html.parser")
     # print(metaSoup)
     limit_list = metaSoup.find('div', attrs={'id': 'limit-list'})
+
     # print(limit_list)
     book_info_list = limit_list.findAll('div', attrs={'class': 'book-mid-info'})
     book = []
@@ -69,24 +70,18 @@ def get_limit_list():
     #print(book)
     return book
 def get_limit_list_from_qidian():
-    fp = request.urlopen("https://www.qidian.com/")
+    fp = request.urlopen("https://www.qidian.com/free")
     html = fp.read()
     metaSoup = BeautifulSoup(html, "html.parser")
     #print(metaSoup)
-    limit_list = metaSoup.find('ul', attrs={'id': 'numero5'})
-    #print(limit_list)
-    book_info_list = limit_list.findAll('div', attrs={'class': 'book-img'})
-    #print(book_info_list)
-    # for i in book_info_list:
-    #     print(i.a['href'])
-    #     print(i.a['data-bid'])
-    #     print(i.img['alt'])
+
+    ulll = metaSoup.find('div', attrs={'class': 'book-img-text'})
+    limit_list = ulll.find_all('h4')
+
     book = []
-    for i in book_info_list:
-        id_link = i.a['href']
+    for i in limit_list:
         id = i.a['data-bid']
-        n = i.img['alt']
-        # print(id_link.split('/')[-1])
+        n = i.a.text
         data = {'name': n, 'url': 'https://book.qidian.com/info/' + id + "#Catalog", 'id': id}
         book.append(data)
     # print(book)
@@ -440,7 +435,7 @@ def getTextData(bookID,ChepterID):
 
 if __name__ == "__main__":
     pass
-    print(get_limit_list_from_qidian())
+    #print(get_limit_list_from_qidian())
     # #测试，根据id获取书籍名称和目录章节
     # print(get_book_by_id(1005188549))
     # #测试，从限免章节页面获取书籍名称和目录章节
