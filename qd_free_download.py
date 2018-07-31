@@ -77,7 +77,7 @@ def path_linux(path):
 def path_format(path):
     if os.name == 'nt':
         path = path_win(path)
-    elif os.name == 'Android' or 'posix':
+    elif os.name == 'Android' or os.name == 'posix':
         path = path_linux(path)
     return path
 

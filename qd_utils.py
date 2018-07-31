@@ -303,7 +303,7 @@ def path_linux(path):
 def path_format(path):
     if os.name == 'nt':
         path = path_win(path)
-    elif os.name == 'Android' or 'posix':
+    elif os.name == 'Android' or os.name == 'posix':
         path = path_linux(path)
     return path
 
@@ -312,7 +312,7 @@ def getPath():
     path = './'
     if os.name == 'nt':
         path = os.getcwd()
-    elif os.name == 'Android' or 'posix':
+    elif os.name == 'Android' or os.name == 'posix':
         path = os.path.dirname(__file__)
         if path == './':
             path = '/storage/emulated/0/qpython/scripts3/projects3/qidian'
