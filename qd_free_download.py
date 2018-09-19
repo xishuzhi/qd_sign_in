@@ -145,7 +145,7 @@ def get_html(url, count=0):
         try:
             html = gzip.decompress(doc).decode("utf-8")
             # print('返回gzip格式的文件')
-        except IOError:
+        except:
             html = doc.decode("utf-8")
             # print('返回正常格式的文件')
     except Exception as e:
@@ -249,6 +249,21 @@ def get_limit_list_from_qidian():
         data = {'name': n, 'url': 'https://book.qidian.com/info/' + book_id + "#Catalog", 'id': book_id}
         book.append(data)
     # print(book)
+    return book
+
+
+def get_limit_list_from_m_qidian_free():
+    fp = request.urlopen("https://m.qidian.com/free")
+    html = fp.read()
+    meta_soup = BeautifulSoup(html, "html.parser")
+    book_img_text = meta_soup.find('div', attrs={'class': 'module-slide'})
+    li_list = book_img_text.find_all('li', attrs={'class', 'module-slide-li'})
+    book = []
+    for var in li_list:
+        book_id = var.a['href'][6:]
+        book_name = var.img['alt']
+        data = {'name': book_name, 'url': 'https://book.qidian.com/info/' + book_id + "#Catalog", 'id': book_id}
+        book.append(data)
     return book
 
 
@@ -419,5 +434,42 @@ def main():
         time.sleep(7200)
         os.system('cls')
 
+
+def test():
+    html = open_file('m.qidian.free.html')
+    meta_soup = BeautifulSoup(html, "html.parser")
+    book_img_text = meta_soup.find('div', attrs={'class': 'module-slide'})
+    li_list = book_img_text.find_all('li', attrs={'class', 'module-slide-li'})
+    book = []
+    for var in li_list:
+        book_id = var.a['href'][6:]
+        book_name = var.img['alt']
+        data = {'name': book_name, 'url': 'https://book.qidian.com/info/' + book_id + "#Catalog", 'id': book_id}
+        book.append(data)
+    print(book)
+    return book
+
+
+def getData(dirPath):
+    dirlist = os.listdir(dirPath)
+    outDir = dirPath + '\\out'
+
+    for f in dirlist:
+        file_name = f + '.txt.gz'
+        dp = dirPath + "\\" + f
+        fdp = dp + "\\" + file_name
+        print(fdp)
+        if os.path.exists(fdp):
+            if os.path.exists(outDir):
+                os.mkdir(outDir)
+            try:
+                os.shutil.move(fdp, outDir)
+            except Exception as why:
+                print("shutil.move Faild: %s " % str(why))
+                pass
+
 if __name__ == "__main__":
     main()
+    # test()
+    pass
+

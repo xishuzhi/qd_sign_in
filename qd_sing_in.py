@@ -141,8 +141,8 @@ def checkClick(br):
 
 def main():
     # test()
-    # browser = webdriver.Chrome()
-    browser = webdriver.Ie()
+    browser = webdriver.Chrome()
+    # browser = webdriver.Ie()
 
     if open_qd(browser):
         checkClick(browser)
