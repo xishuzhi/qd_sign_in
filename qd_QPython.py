@@ -325,7 +325,7 @@ def start_xm():
         book_info_data, book_info_json, is_free_limit = getBookVolumeInfoJson(book_id)
         # print('name=%s,id=%s,url=%s,path=%s,list=%s' % (book_name,book_id,book_url,book_path,book_info_list))
         # print(book_info_list)
-        t = downloadbook_to_gzip(book_name,book_info_data,book_info_json,book_path,is_free_limit)
+        t = downloadbook_to_gzip(book_name, book_info_data, book_info_json, book_path, is_free_limit)
         t.start()
         tasks.append(t)
     for task in tasks:
@@ -379,16 +379,28 @@ def start_main():
         pass
 
 
+class start_xm_thread(Thread):
+    def __init__(self):
+        Thread.__init__(self)
+
+    def run(self):
+        start_xm()
+
+
 def main():
     if os.path.exists('autodownload.config') or os.path.exists('auto_download.config'):
         start_xm()
         start_main()
     elif os.path.exists('t.config'):
+        t = start_xm_thread()
         while True:
-            start_xm()
-            print('sleep 7200秒')
-            time.sleep(7200)
-            os.system('cls')
+            # start_xm()
+            if not t.isAlive():
+                t.start()
+                t.join()
+                print('sleep 7200秒')
+                time.sleep(7200)
+                os.system('cls')
     else:
         start_main()
 if __name__ == "__main__":
