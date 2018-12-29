@@ -26,8 +26,8 @@ class NextDayTools:
         self.save_datetime = datetime.datetime.now()
 
     def check_new_day(self):
-        print('检查是否新的一天,time_now = '
-              + self.update_datetime.strftime('%Y-%m-%d %H:%M:%S')+',save_time = '
+        print('程序启动时间：'+self.start_time_datetime.strftime('%Y-%m-%d %H:%M:%S')+'\n检查是否新的一天!\ntime_now  = '
+              + self.update_datetime.strftime('%Y-%m-%d %H:%M:%S')+'\nsave_time = '
               + self.save_datetime.strftime('%Y-%m-%d %H:%M:%S'))
         result = False
         _day = (self.update_datetime - self.save_datetime).days
@@ -73,7 +73,7 @@ class qd_sing_in:
         else:
             self.browser = webdriver.Chrome()
 
-    def open_qd(self):
+    def login_qd(self):
         self.browser.get(self.url_qd)
         if os.path.exists(self.cookies_file):
             try:
@@ -82,12 +82,10 @@ class qd_sing_in:
                     f.close()
                     for l in cookies_lsit:
                         self.browser.add_cookie(l)
-                        print('导入cookies：'+str(l))
+                        print('导入cookies：' + str(l))
             except WebDriverException as e:
-                print('导入cookies错误：'+e.msg)
-        self.browser.get(self.url)
-        wait = WebDriverWait(self.browser, 120)
-        result = wait.until(must_get_url(self.url))
+                print('导入cookies错误：' + e.msg)
+        result = self.open_qd_level()
         if result:
             self.cookies = self.browser.get_cookies()
             with open('qd.cookies.txt', 'w', encoding='utf-8') as f:
@@ -95,38 +93,49 @@ class qd_sing_in:
                 f.close()
         return result
 
+    def open_qd_level(self):
+        try:
+            self.browser.get(self.url)
+            result = WebDriverWait(self.browser, 120).until(must_get_url(self.url))
+        except WebDriverException as e:
+            print('open_qd错误：'+e.msg)
+        return result
+
     def quit(self):
         self.browser.quit()
 
     # 执行签到函数
     def sing_in(self):
+        if not self.open_qd_level():
+            return False, self.index, 1200
         btn = self.browser.find_elements_by_class_name('award-task-item')
         sing_finish = False
-        sum = 0
+        count = 0
         for i in btn:
             res = i.text.split('\n')
             if len(res) == 3:
                 print(res[2])
                 if '领取' == res[2]:
-                    bt = i.find_element_by_xpath('//*[@id="elTaskWrap"]/li[%s]/a' % sum)
+                    bt = i.find_element_by_xpath('//*[@id="elTaskWrap"]/li[%s]/a' % count)
                     bt.click()
-                    sum += 1
+                    count += 1
                     self.browser.implicitly_wait(5)
                 elif '已领取' == res[2]:
-                    sum += 1
+                    count += 1
             elif len(res) == 4:
                 print(res[3])
                 if '领取' == res[3]:
-                    bt = i.find_element_by_xpath('//*[@id="elTaskWrap"]/li[%s]/a' % sum)
+                    bt = i.find_element_by_xpath('//*[@id="elTaskWrap"]/li[%s]/a' % count)
                     bt.click()
-                    sum += 1
+                    count += 1
                     self.browser.implicitly_wait(5)
                 elif '已领取' == res[3]:
-                    sum += 1
-        if len(self.step) > sum + 1:
-            self.index = sum + 1
+                    count += 1
+        if len(self.step) > count + 1:
+            self.index = count + 1
         else:
             sing_finish = True
+            self.index = 0
         return sing_finish, self.index, self.step[self.index]
 
 
@@ -134,9 +143,12 @@ class qd_sing_in:
 
 
 def main():
+    # 初始化计时工具
     dt = NextDayTools()
+    # 初始化起点签到类
     qd = qd_sing_in()
-    if qd.open_qd():
+    # 登录起点
+    if qd.login_qd():
         # 签到结果是否完成,签到序号,距离下一次签到剩余等待时间（秒）
         is_finish, index, seconds = qd.sing_in()
         while True:
