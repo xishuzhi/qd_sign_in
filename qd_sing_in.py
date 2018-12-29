@@ -1,203 +1,200 @@
 # -*- coding: utf-8 -*-
 from selenium import webdriver
+from selenium.webdriver.support.ui import WebDriverWait  # 显示等待
+from selenium.common.exceptions import WebDriverException   #
 import time
 import datetime
 import os
+import json
 
 
-ERROR = -1
-NEXT_DAY = 1
-FINISH = 2
+class NextDayTools:
+    def __init__(self):
+        self.start_time_datetime = datetime.datetime.now()      # 记录程序启动时间
+        self.record_day_old = datetime.datetime.day             # 记录日期
+        self.save_datetime = datetime.datetime.now()            # 记录时间
+        self.update_datetime = datetime.datetime.now()          # 持续记录的更新时间
+        self.next_datetime = datetime.datetime.now()            # 记录下一次执行时间
 
-url = "https://my.qidian.com/level/"
-url2 = 'https://my.qidian.com/'
-url3 = 'my.qidian.com'
+    # 更新时间
+    def update(self):
+        self.update_datetime = datetime.datetime.now()
+
+    # 刷新日期
+    def refresh_day(self):
+        self.record_day_old = datetime.datetime.day
+        self.save_datetime = datetime.datetime.now()
+
+    def check_new_day(self):
+        print('检查是否新的一天,time_now = '
+              + self.update_datetime.strftime('%Y-%m-%d %H:%M:%S')+',save_time = '
+              + self.save_datetime.strftime('%Y-%m-%d %H:%M:%S'))
+        result = False
+        _day = (self.update_datetime - self.save_datetime).days
+        if _day > 0:
+            result = True
+        return result
 
 
-# 打开起点签到页面函数
-def open_qd(browser):
-    browser.get(url)
-    time.sleep(5)
-    try:
-        if browser.current_url != url and os.path.exists('config.txt'):
-            with open('config.txt') as f:
-                txt = f.read()
-                n = txt.split(',')
-                # 输入账号和密码
-                browser.find_element_by_id("username").send_keys(n[0])
-                browser.find_element_by_id("password").send_keys(n[1])
-                time.sleep(1)
-                # 点击按钮提交登录表单
-                browser.find_element_by_css_selector("a.red-btn.go-login.btnLogin.login-button").click()
-                time.sleep(15)
-        #print(browser.current_url)
-        while(browser.current_url != url and browser.current_url.find(url2) < 0):
-            #print("等待登陆!!!")
-            time.sleep(1)
-        # 验证登录成功的url
-        currUrl = browser.current_url
-        if currUrl == url or currUrl.find(url3) > 0:
-            print(u"success")
-            browser.get(url)
-            return True
+    def check_time_seconds(self, seconds):
+        result = False
+        _seconds = (self.update_datetime - self.save_datetime).seconds
+        if _seconds > seconds:
+            result = True
+        return result
+
+
+class must_get_url(object):
+    '''
+    必须到达的URL
+       参数：
+       url    - 必须到达的地址
+    '''
+    def __init__(self, url):
+        self.url = url
+
+    def __call__(self, driver):
+        # driver.get(self.url)
+        print(driver.current_url)
+        return self.url == driver.current_url
+
+
+class qd_sing_in:
+    def __init__(self, br_name=''):
+        self.url = "https://my.qidian.com/level"
+        self.url_qd = "https://www.qidian.com"
+        self.cookies_file = 'qd.cookies.txt'
+        self.cookies = ''
+        self.step = {0: 300, 1: 300, 2: 300, 3: 600, 4: 600, 5: 600, 6: 3600, 7: 3600}
+        self.index = 0
+
+        if br_name == 'IE' or br_name == 'ie' or br_name == 'Ie':
+            self.browser = webdriver.Ie()
         else:
-            print(u"failure")
-            writeLog()
-            return False
-    except:
-        print(u"failure")
-        writeLog()
+            self.browser = webdriver.Chrome()
 
+    def open_qd(self):
+        self.browser.get(self.url_qd)
+        if os.path.exists(self.cookies_file):
+            try:
+                with open(self.cookies_file, 'r', encoding='utf-8') as f:
+                    cookies_lsit = json.loads(f.read())
+                    f.close()
+                    for l in cookies_lsit:
+                        self.browser.add_cookie(l)
+                        print('导入cookies：'+str(l))
+            except WebDriverException as e:
+                print('导入cookies错误：'+e.msg)
+        self.browser.get(self.url)
+        wait = WebDriverWait(self.browser, 120)
+        result = wait.until(must_get_url(self.url))
+        if result:
+            self.cookies = self.browser.get_cookies()
+            with open('qd.cookies.txt', 'w', encoding='utf-8') as f:
+                f.write(json.dumps(self.cookies))
+                f.close()
+        return result
 
-def open_new(browser):
-    js = 'window.open("https://t.qidian.com/Profile/Score.php");'
-    browser.execute_script(js)
-    handles = browser.window_handles
-    for handle in handles:  # 切换窗口
-        if handle != browser.current_window_handle:
-            browser.switch_to_window(handle)
-            break
+    def quit(self):
+        self.browser.quit()
 
-
-# 写错误日志并截图
-def writeLog():
-    # # 组合日志文件名（当前文件名+当前时间）.比如：case_login_success_20150817192533
-    # basename = os.path.splitext(os.path.basename(__file__))[0]
-    # logFile = basename + "-" + datetime.datetime.now().strftime("%Y%m%d%H%M%S") + ".log"
-    # logging.basicConfig(filename=logFile)
-    # s = traceback.format_exc()
-    # logging.error(s)
-    # browser.get_screenshot_as_file("./" + logFile + "-screenshot_error.png")
-    # s = traceback.format_exc()
-    # #print(s)
-    pass
-def printTime(type):
-    t = datetime.datetime.now().strftime(type)
-    print(t)
-
-
-def getTime(type):
-    t = datetime.datetime.now().strftime(type)
-    return t
-
-
-def checkClick(br):
-    data_now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print("star time :" + data_now)
-    data_now = datetime.datetime.now().strftime('%d')
-    isNextDay = False
-    try:
-        while True:
-            os.system('cls')
-            now = datetime.datetime.now().strftime('%d')
-            this_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            print(this_time)
-            sing_in_count = 0
-            if str(data_now) != str(now):
-                data_now = now
-                isNextDay = True
-                br.refresh()
-                time.sleep(15)
-            if br.current_url == url:
-                btn = br.find_elements_by_class_name('award-task-item')
-                # print(btn)
-                sum = 0
-                for i in btn:
-                    sum += 1
-                    res = i.text.split('\n')
-                    if len(res) == 3:
-                        print(res[2])
-                        if '领取' == res[2]:
-                            bt = i.find_element_by_xpath('//*[@id="elTaskWrap"]/li[%s]/a' % sum)
-                            bt.click()
-                            br.implicitly_wait(5)
-                        elif '已领取' == res[2]:
-                            sing_in_count += 1
-                    elif len(res) == 4:
-                        print(res[3])
-                        if '领取' == res[3]:
-                            bt = i.find_element_by_xpath('//*[@id="elTaskWrap"]/li[%s]/a' % sum)
-                            bt.click()
-                            br.implicitly_wait(5)
-                        elif '已领取' == res[3]:
-                            sing_in_count += 1
-
-                if sing_in_count == 8:
-                    br.get('https://my.qidian.com')
-                time.sleep(15)
-                #return checkClick(br)
-            else:
-                print('sleep 600s')
-                time.sleep(600)
-            if isNextDay:
-                print('next day !')
-                open_qd(br)
-                time.sleep(5)
-    except Exception as e:
-        print('end error : %s ' % e)
-        writeLog()
-        return checkClick(br)
-
-
-def main():
-    # test()
-    browser = webdriver.Chrome()
-    # browser = webdriver.Ie()
-
-    if open_qd(browser):
-        checkClick(browser)
-    browser.quit()
-
-
-def test():
-    browser = webdriver.Ie()
-    # browser = webdriver.Chrome()
-    browser.get('http://192.168.0.25/qidian3.html')
-    # start_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    # global log_str
-    # log_str = "start time :%s\n" % start_time
-    #btn = browser.find_element_by_xpath('//*[@id="elTaskWrap"]/li')
-    try:
-        btn = browser.find_elements_by_class_name('award-task-item')
-        #print(btn)
+    # 执行签到函数
+    def sing_in(self):
+        btn = self.browser.find_elements_by_class_name('award-task-item')
+        sing_finish = False
         sum = 0
         for i in btn:
-            sum += 1
             res = i.text.split('\n')
             if len(res) == 3:
                 print(res[2])
                 if '领取' == res[2]:
-                    aaa = i.find_element_by_xpath('//*[@id="elTaskWrap"]/li[%s]/a' % sum)
-                    print('点击：'+aaa.text)
-                elif '已领取' ==  res[2]:
-                    pass
-
+                    bt = i.find_element_by_xpath('//*[@id="elTaskWrap"]/li[%s]/a' % sum)
+                    bt.click()
+                    sum += 1
+                    self.browser.implicitly_wait(5)
+                elif '已领取' == res[2]:
+                    sum += 1
             elif len(res) == 4:
                 print(res[3])
                 if '领取' == res[3]:
-                    aaa = i.find_element_by_xpath('//*[@id="elTaskWrap"]/li[%s]/a' % sum)
-                    print('点击：'+aaa.text)
+                    bt = i.find_element_by_xpath('//*[@id="elTaskWrap"]/li[%s]/a' % sum)
+                    bt.click()
+                    sum += 1
+                    self.browser.implicitly_wait(5)
+                elif '已领取' == res[3]:
+                    sum += 1
+        if len(self.step) > sum + 1:
+            self.index = sum + 1
+        else:
+            sing_finish = True
+        return sing_finish, self.index, self.step[self.index]
 
-            #print("内容：%s，type:%s" % ((i.text.split('\n')),type(i.text)))
-    except Exception as ex:
-        print(ex)
-    i = 1
-    while i < 6:
-        try:
-            #btn = browser.find_element_by_xpath('//*[@id="elTaskWrap"]/li[%s]' % i)
-            print("ID=%s ,type = %s" % (i,(btn.text)))
-            if '领取' in btn.text:
-                print('有可以领取的东西')
 
-        except:
-            pass
-        finally:
-            i = i + 1
-    browser.quit()
+
+
+
+def main():
+    dt = NextDayTools()
+    qd = qd_sing_in()
+    if qd.open_qd():
+        # 签到结果是否完成,签到序号,距离下一次签到剩余等待时间（秒）
+        is_finish, index, seconds = qd.sing_in()
+        while True:
+            os.system('cls')
+            dt.update()             # 更新时间记录
+            if dt.check_new_day():
+                print('第二天了，开始签到')
+                # 执行签到函数
+                is_finish, index, seconds = qd.sing_in()
+                # 新的一天，刷新日期
+                dt.refresh_day()
+            if not is_finish:
+                if dt.check_time_seconds(seconds):
+                    is_finish, index, seconds = qd.sing_in()
+            else:
+                print('今天签到已经完成')
+            time.sleep(10)
+    qd.quit()
+
+
+
+def get_time():
+    dt = datetime.datetime.now()
+
+    t = {'年': str(dt.strftime('%Y')), '月': str(dt.strftime('%m')), '日': str(dt.strftime('%d')),
+         '时': str(dt.strftime('%H')), '分': str(dt.strftime('%M')), '秒': str(dt.strftime('%S'))}
+    return t
+
+
+
+def test():
+    dt = NextDayTools()
+    qd = qd_sing_in()
+    if qd.open_qd():
+        # 签到结果是否完成,签到序号,距离下一次签到剩余等待时间（秒）
+        is_finish, index, seconds = qd.sing_in()
+        while True:
+            os.system('cls')
+            dt.update()             # 更新时间记录
+            if dt.check_new_day():
+                print('第二天了，开始签到')
+                # 执行签到函数
+                is_finish, index, seconds = qd.sing_in()
+                # 新的一天，刷新日期
+                dt.refresh_day()
+            if not is_finish:
+                if dt.check_time_seconds(seconds):
+                    is_finish, index, seconds = qd.sing_in()
+            else:
+                print('今天签到已经完成')
+            time.sleep(10)
+    qd.quit()
+
 
 
 if __name__ == "__main__":
     main()
+
 
 
 
