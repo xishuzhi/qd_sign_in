@@ -26,13 +26,16 @@ class NextDayTools:
         self.save_datetime = datetime.datetime.now()
 
     def check_new_day(self):
+
+        result = False
+        _day = (self.update_datetime.day - self.save_datetime.day)
+
+        if _day != 0:
+            result = True
+
         print('程序启动时间：'+self.start_time_datetime.strftime('%Y-%m-%d %H:%M:%S')+'\n检查是否新的一天!\ntime_now  = '
               + self.update_datetime.strftime('%Y-%m-%d %H:%M:%S')+'\nsave_time = '
-              + self.save_datetime.strftime('%Y-%m-%d %H:%M:%S'))
-        result = False
-        _day = (self.update_datetime - self.save_datetime).days
-        if _day > 0:
-            result = True
+              + self.save_datetime.strftime('%Y-%m-%d %H:%M:%S')+'\n结果:'+str(_day))
         return result
 
 
@@ -65,7 +68,7 @@ class qd_sing_in:
         self.url_qd = "https://www.qidian.com"
         self.cookies_file = 'qd.cookies.txt'
         self.cookies = ''
-        self.step = {0: 300, 1: 300, 2: 300, 3: 600, 4: 600, 5: 600, 6: 3600, 7: 3600}
+        self.step = {0: 300, 1: 300, 2: 600, 3: 1200, 4: 1800, 5: 3600, 6: 3600, 7: 3600, 8: 3600}
         self.index = 0
 
         if br_name == 'IE' or br_name == 'ie' or br_name == 'Ie':
@@ -94,8 +97,10 @@ class qd_sing_in:
         return result
 
     def open_qd_level(self):
+        result = False
         try:
-            self.browser.get(self.url)
+            if self.url != self.browser.current_url:
+                self.browser.get(self.url)
             result = WebDriverWait(self.browser, 120).until(must_get_url(self.url))
         except WebDriverException as e:
             print('open_qd错误：'+e.msg)
@@ -104,39 +109,75 @@ class qd_sing_in:
     def quit(self):
         self.browser.quit()
 
+    def find_btn(self, btn_name='ui-button'):
+        try:
+            btn = self.browser.find_element_by_class_name(btn_name)
+            if btn.text == '领取':
+                print('找到领取经验按钮')
+                # btn.click()
+            else:
+                print('时间未到：'+btn.text)
+                t = btn.text.split(':')
+                second = int(t[0])*60 + int(t[1])
+                print(second)
+            return True
+            # print('查找btn2结果：' + btn.text)
+        except WebDriverException as e:
+            # print('find_element_by_class_name错误：'+e.msg)
+            return False
+
+    def find_btn_by_class(self, element, name):
+        try:
+            btn = element.find_element_by_class_name(name)
+            return btn
+        except WebDriverException as e:
+            return None
+
+    def find_award_task_status(self):
+        try:
+            time_str = self.browser.find_element_by_class_name('award-task-status')
+        except WebDriverException as e:
+            print('find_award_task_status错误：'+e.msg)
+
+    def check_next_time(self):
+        try:
+            btn = self.browser.find_element_by_class_name('ui-button')
+            if btn.text == '领取':
+                pass
+            else:
+                print('时间未到：'+btn.text)
+                t = btn.text.split(':')
+                second = int(t[0])*60 + int(t[1])
+                print('距离下次签到剩余时间：'+str(second)+'秒')
+        except WebDriverException:
+            pass
     # 执行签到函数
     def sing_in(self):
-        if not self.open_qd_level():
-            return False, self.index, 1200
-        btn = self.browser.find_elements_by_class_name('award-task-item')
         sing_finish = False
-        count = 0
-        for i in btn:
-            res = i.text.split('\n')
-            if len(res) == 3:
-                print(res[2])
-                if '领取' == res[2]:
-                    bt = i.find_element_by_xpath('//*[@id="elTaskWrap"]/li[%s]/a' % count)
-                    bt.click()
-                    count += 1
-                    self.browser.implicitly_wait(5)
-                elif '已领取' == res[2]:
-                    count += 1
-            elif len(res) == 4:
-                print(res[3])
-                if '领取' == res[3]:
-                    bt = i.find_element_by_xpath('//*[@id="elTaskWrap"]/li[%s]/a' % count)
-                    bt.click()
-                    count += 1
-                    self.browser.implicitly_wait(5)
-                elif '已领取' == res[3]:
-                    count += 1
-        if len(self.step) > count + 1:
-            self.index = count + 1
-        else:
+        try:
+            items = self.browser.find_elements_by_class_name('award-task-item')
+            count = 0
+            for i in items:
+                ii = i.text.split('\n')
+                for n in ii:
+                    if n == '已领取':
+                        count += 1
+            self.index = count
+            print('总签到数量为：'+str(count))
+            btn = self.browser.find_element_by_class_name('ui-button')
+            if btn.text == '领取':
+                print('找到领取经验按钮，点击领取经验')
+                btn.click()
+                self.index += 1
+                second = self.step[self.index]
+            else:
+                print('时间未到：'+btn.text)
+                t = btn.text.split(':')
+                second = int(t[0])*60 + int(t[1])
+                print('距离下次签到剩余时间：'+str(second)+'秒')
+        except WebDriverException:
             sing_finish = True
-            self.index = 0
-        return sing_finish, self.index, self.step[self.index]
+        return sing_finish, self.index, second
 
 
 
@@ -161,6 +202,7 @@ def main():
                 # 新的一天，刷新日期
                 dt.refresh_day()
             if not is_finish:
+                qd.check_next_time()
                 if dt.check_time_seconds(seconds):
                     is_finish, index, seconds = qd.sing_in()
             else:
@@ -199,6 +241,8 @@ def test():
                     is_finish, index, seconds = qd.sing_in()
             else:
                 print('今天签到已经完成')
+            # print('签到结果:%s,序号:%s,等待时间:%s' % (is_finish, index, seconds))
+            print('签到序号:'+index)
             time.sleep(10)
     qd.quit()
 
