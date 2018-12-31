@@ -143,17 +143,25 @@ class qd_sing_in:
         try:
             btn = self.browser.find_element_by_class_name('ui-button')
             if btn.text == '领取':
-                pass
+                return True, 0
+                # pass
             else:
                 print('时间未到：'+btn.text)
                 t = btn.text.split(':')
                 second = int(t[0])*60 + int(t[1])
                 print('距离下次签到剩余时间：'+str(second)+'秒')
+                return False, second
         except WebDriverException:
-            pass
+            return True, -1
+            # pass
+
     # 执行签到函数
     def sing_in(self):
         sing_finish = False
+        second = -1
+        if not self.open_qd_level():
+            time.sleep(10)
+            return sing_finish, second
         try:
             items = self.browser.find_elements_by_class_name('award-task-item')
             count = 0
@@ -163,24 +171,27 @@ class qd_sing_in:
                     if n == '已领取':
                         count += 1
             self.index = count
-            print('总签到数量为：'+str(count))
+            print('总签到数量为：' + str(count))
+            if self.index == 8:
+                print('今天的签到已经完成')
+                sing_finish = True
+                return sing_finish, second
             btn = self.browser.find_element_by_class_name('ui-button')
             if btn.text == '领取':
                 print('找到领取经验按钮，点击领取经验')
                 btn.click()
                 self.index += 1
-                second = self.step[self.index]
+                second = 0
             else:
                 print('时间未到：'+btn.text)
                 t = btn.text.split(':')
                 second = int(t[0])*60 + int(t[1])
                 print('距离下次签到剩余时间：'+str(second)+'秒')
+
         except WebDriverException:
             sing_finish = True
-        return sing_finish, self.index, second
 
-
-
+        return sing_finish, second
 
 
 def main():
@@ -191,20 +202,21 @@ def main():
     # 登录起点
     if qd.login_qd():
         # 签到结果是否完成,签到序号,距离下一次签到剩余等待时间（秒）
-        is_finish, index, seconds = qd.sing_in()
+        # is_finish, index, seconds = qd.sing_in()
+        is_finish, seconds = qd.sing_in()
         while True:
             os.system('cls')
             dt.update()             # 更新时间记录
             if dt.check_new_day():
                 print('第二天了，开始签到')
                 # 执行签到函数
-                is_finish, index, seconds = qd.sing_in()
+                is_finish, seconds = qd.sing_in()
                 # 新的一天，刷新日期
                 dt.refresh_day()
             if not is_finish:
-                qd.check_next_time()
+                is_finish, seconds = qd.check_next_time()
                 if dt.check_time_seconds(seconds):
-                    is_finish, index, seconds = qd.sing_in()
+                    is_finish, seconds = qd.sing_in()
             else:
                 print('今天签到已经完成')
             time.sleep(10)
