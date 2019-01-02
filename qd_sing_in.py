@@ -146,20 +146,18 @@ class qd_sing_in:
         try:
             btn = self.browser.find_element_by_class_name('ui-button')
             if btn.text == '领取':
-                return True, 0
-                # pass
+                return -1
             else:
-                print('时间未到：'+btn.text)
+                print('check_next_time时间未到：'+btn.text)
                 t = btn.text.split(':')
                 if len(t) == 2:
                     second = int(t[0])*60 + int(t[1])
-                    print('距离下次签到剩余时间：'+str(second)+'秒')
-                    return False, second
+                    print('check_next_time距离下次签到剩余时间：'+str(second)+'秒')
+                    return second
                 else:
-                    return True, -1
+                    return -1
         except WebDriverException:
-            return True, -1
-            # pass
+            return -1
 
     def check_login_failed(self):
         if self.browser.current_url == self.url_login or self.browser.current_url[0:self.position_url_passport] == self.url_passport:
@@ -183,22 +181,22 @@ class qd_sing_in:
                     if n == '已领取':
                         count += 1
             self.index = count
-            print('总领取经验数量为：' + str(count))
+            print('sing_in总领取经验数量为：' + str(count))
             if self.index == 8:
-                print('今天的签到已经完成')
+                print('sing_in今天的签到已经完成')
                 sing_finish = True
                 return sing_finish, second
             btn = self.browser.find_element_by_class_name('ui-button')
             if btn.text == '领取':
-                print('找到领取经验按钮，点击领取经验')
+                print('sing_in找到领取经验按钮，点击领取经验')
                 btn.click()
                 self.index += 1
                 second = 0
             else:
-                print('时间未到：'+btn.text)
+                print('sing_in时间未到：'+btn.text)
                 t = btn.text.split(':')
                 second = int(t[0])*60 + int(t[1])
-                print('距离下次领取经验剩余时间：'+str(second)+'秒')
+                print('sing_in距离下次领取经验剩余时间：'+str(second)+'秒')
 
         except WebDriverException:
             sing_finish = True
@@ -220,7 +218,7 @@ def main():
             os.system('cls')
             dt.update()             # 更新时间记录
             if dt.check_new_day():
-                print('第二天了，开始领取经验')
+                print('main第二天了，开始领取经验')
                 # 刷新页面
                 if qd.open_qd_level(True):
                     # 执行领取经验函数
@@ -228,11 +226,11 @@ def main():
                 # 新的一天，刷新日期，不管是否成功领取经验都刷新日期
                 dt.refresh_day()
             if not is_finish:
-                is_finish, seconds = qd.check_next_time()
-                if dt.check_time_seconds(seconds):
+                seconds = qd.check_next_time()
+                if seconds <= 0:
                     is_finish, seconds = qd.sing_in()
             else:
-                print('今天领取经验已经完成')
+                print('main今天领取经验已经完成')
             if qd.check_login_failed():
                 try_count += 1
             if try_count > 5:
@@ -274,7 +272,7 @@ def test():
                 dt.refresh_day()
             if not is_finish:
                 is_finish, seconds = qd.check_next_time()
-                if dt.check_time_seconds(seconds):
+                if seconds < 0:
                     is_finish, seconds = qd.sing_in()
             else:
                 print('今天签到已经完成')
