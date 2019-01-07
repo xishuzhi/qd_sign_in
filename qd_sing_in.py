@@ -6,15 +6,17 @@ import time
 import datetime
 import os
 import json
+from threading import Thread
 
 
 class NextDayTools:
-    def __init__(self):
+    def __init__(self, first_run=True):
         self.start_time_datetime = datetime.datetime.now()      # 记录程序启动时间
         self.record_day_old = datetime.datetime.day             # 记录日期
         self.save_datetime = datetime.datetime.now()            # 记录时间
         self.update_datetime = datetime.datetime.now()          # 持续记录的更新时间
         self.next_datetime = datetime.datetime.now()            # 记录下一次执行时间
+        self.first_run = first_run                              # 第一次运行记录
 
     # 更新时间
     def update(self):
@@ -33,10 +35,16 @@ class NextDayTools:
         if _day != 0:
             result = True
 
+        if self.first_run:
+            result = True
+            self.first_run =False
+
         print('程序启动时间：'+self.start_time_datetime.strftime('%Y-%m-%d %H:%M:%S')+'\n检查是否新的一天!\ntime_now  = '
               + self.update_datetime.strftime('%Y-%m-%d %H:%M:%S')+'\nsave_time = '
               + self.save_datetime.strftime('%Y-%m-%d %H:%M:%S')+'\n结果:'+str(_day))
+
         return result
+
 
 
     def check_time_seconds(self, seconds):
@@ -68,10 +76,10 @@ class qd_sing_in:
         self.url_qd = "https://www.qidian.com"
         self.url_login='https://passport.qidian.com/?appid=10&areaid=1&auto=1&autotime=30&version=1.0&ticket=1&target=top&popup=0&source=pc&returnurl=https%3A%2F%2Fmy.qidian.com'
         self.url_passport = 'https://passport.qidian.com'
+        self.url_myqd = 'https://my.qidian.com'
         self.position_url_passport = 27
         self.cookies_file = 'qd.cookies.txt'
         self.cookies = ''
-        self.step = {0: 300, 1: 300, 2: 600, 3: 1200, 4: 1800, 5: 3600, 6: 3600, 7: 3600, 8: 3600}
         self.index = 0
 
         if br_name == 'IE' or br_name == 'ie' or br_name == 'Ie':
@@ -104,10 +112,28 @@ class qd_sing_in:
         try:
             if self.url != self.browser.current_url or refresh:
                 self.browser.get(self.url)
+            if self.browser.current_url == self.position_url_passport \
+                    or self.browser.current_url[0:self.position_url_passport] == self.url_passport:
+                if os.path.exists('config.txt'):
+                    with open('config.txt') as f:
+                        txt = f.read()
+                        n = txt.split(',')
+                        # 输入账号和密码
+                        self.browser.find_element_by_id("username").send_keys(n[0])
+                        self.browser.find_element_by_id("password").send_keys(n[1])
+                        time.sleep(1)
+                        # 点击按钮提交登录表单
+                        self.browser.find_element_by_css_selector("a.red-btn.go-login.btnLogin.login-button").click()
+                        time.sleep(5)
+                        self.browser.get(self.url)
+
             result = WebDriverWait(self.browser, 120).until(must_get_url(self.url))
         except WebDriverException as e:
             print('open_qd错误：'+e.msg)
         return result
+
+    def open_myqd(self):
+        self.browser.get(self.url)
 
     def quit(self):
         self.browser.quit()
@@ -190,18 +216,45 @@ class qd_sing_in:
             if btn.text == '领取':
                 print('sing_in找到领取经验按钮，点击领取经验')
                 btn.click()
+                self.browser.implicitly_wait(3)
                 self.index += 1
                 second = 0
             else:
                 print('sing_in时间未到：'+btn.text)
                 t = btn.text.split(':')
-                second = int(t[0])*60 + int(t[1])
-                print('sing_in距离下次领取经验剩余时间：'+str(second)+'秒')
+                if len(t) == 2:
+                    second = int(t[0])*60 + int(t[1])
+                    print('sing_in距离下次领取经验剩余时间：'+str(second)+'秒')
 
         except WebDriverException:
-            sing_finish = True
-
+            # sing_finish = True
+            # self.open_qd_level(True)
+            # return self.sing_in()
+            print('貌似签到完成了，需要再次检查')
         return sing_finish, second
+
+
+class start_sing_in(Thread):
+    def __init__(self, qd):
+        Thread.__init__(self)
+        self.qd = qd
+
+    def run(self):
+        # 登录起点
+        if self.qd.login_qd():
+            # 签到结果是否完成,距离下一次签到剩余等待时间（秒）
+            is_finish, seconds = self.qd.sing_in()
+            while True:
+                os.system('cls')
+                if not is_finish:
+                    seconds = self.qd.check_next_time()
+                    if seconds <= 0:
+                        is_finish, seconds = self.qd.sing_in()
+                    time.sleep(1)
+                else:
+                    print('main今天领取经验已经完成')
+                    self.qd.quit()
+                    break
 
 
 def main():
@@ -209,35 +262,18 @@ def main():
     dt = NextDayTools()
     # 初始化起点签到类
     qd = qd_sing_in()
-    # 登录起点
-    if qd.login_qd():
-        # 签到结果是否完成,距离下一次签到剩余等待时间（秒）
-        is_finish, seconds = qd.sing_in()
-        try_count = 0
-        while True:
-            os.system('cls')
-            dt.update()             # 更新时间记录
-            if dt.check_new_day():
-                print('main第二天了，开始领取经验')
-                # 刷新页面
-                if qd.open_qd_level(True):
-                    # 执行领取经验函数
-                    is_finish, seconds = qd.sing_in()
-                # 新的一天，刷新日期，不管是否成功领取经验都刷新日期
-                dt.refresh_day()
-            if not is_finish:
-                seconds = qd.check_next_time()
-                if seconds <= 0:
-                    is_finish, seconds = qd.sing_in()
+    sing_in_thread = start_sing_in(qd)
+    while True:
+        os.system('cls')
+        dt.update()  # 更新时间记录
+        if dt.check_new_day():
+            print('main第二天了，开始领取经验')
+            if not sing_in_thread.isAlive():
+                sing_in_thread.start()
+                sing_in_thread.join()
             else:
-                print('main今天领取经验已经完成')
-            if qd.check_login_failed():
-                try_count += 1
-            if try_count > 5:
-                break
-            time.sleep(10)
-    qd.quit()
-
+                print('main等待签到完成')
+            print('main签到完成，退出线程')
 
 
 def get_time():
@@ -246,7 +282,6 @@ def get_time():
     t = {'年': str(dt.strftime('%Y')), '月': str(dt.strftime('%m')), '日': str(dt.strftime('%d')),
          '时': str(dt.strftime('%H')), '分': str(dt.strftime('%M')), '秒': str(dt.strftime('%S'))}
     return t
-
 
 
 def test():
@@ -286,6 +321,8 @@ def test():
 
 if __name__ == "__main__":
     main()
+
+
 
 
 
