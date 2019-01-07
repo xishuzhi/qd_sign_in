@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait  # 显示等待
-from selenium.common.exceptions import WebDriverException   #
+from selenium.common.exceptions import WebDriverException
 import time
 import datetime
 import os
