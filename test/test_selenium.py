@@ -80,7 +80,6 @@ def test2():
     第四步:查找签到按钮'btn = browser.find_element_by_class_name('white-modal')
     btn   class = 'white-modal sign sign-new'
     
-    cookies:[{'domain': 'home.115.com', 'httpOnly': True, 'value': '7819730515463984112425242ee9572cb6a5a6802effdd0bd2f0616c2fbe72', 'expiry': 1549076801.670187, 'secure': False, 'path': '/', 'name': 'acw_tc'}, {'domain': '.115.com', 'httpOnly': True, 'value': '5338142_A1_1546398434', 'secure': False, 'path': '/', 'name': 'UID'}, {'domain': '.115.com', 'httpOnly': True, 'value': 'fca8bc60a10a114862deb3b751af4389', 'secure': False, 'path': '/', 'name': 'CID'}, {'domain': '.115.com', 'httpOnly': True, 'value': 'a8ec1537691a11916e15d72657450ed6e8620bb7eb21a46a0efd3589d99944b55928fb2972f55ad74d9c434e122cbb1c9155b0008f02815794714d10', 'secure': False, 'path': '/', 'name': 'SEID'}]
     
     '''
 
