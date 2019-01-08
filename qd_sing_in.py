@@ -260,20 +260,19 @@ class start_sing_in(Thread):
 def main():
     # 初始化计时工具
     dt = NextDayTools()
-    # 初始化起点签到类
-    qd = qd_sing_in()
-    sing_in_thread = start_sing_in(qd)
     while True:
         os.system('cls')
         dt.update()  # 更新时间记录
         if dt.check_new_day():
             print('main第二天了，开始领取经验')
-            if not sing_in_thread.isAlive():
-                sing_in_thread.start()
-                sing_in_thread.join()
-            else:
-                print('main等待签到完成')
+            # 初始化起点签到类
+            qd = qd_sing_in()
+            sing_in_thread = start_sing_in(qd)
+            sing_in_thread.start()
+            sing_in_thread.join()
+            del qd
             print('main签到完成，退出线程')
+        time.sleep(10)
 
 
 def get_time():
