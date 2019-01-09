@@ -265,6 +265,8 @@ def main():
         dt.update()  # 更新时间记录
         if dt.check_new_day():
             print('main第二天了，开始领取经验')
+            # 刷新时间记录
+            dt.refresh_day()
             # 初始化起点签到类
             qd = qd_sing_in()
             sing_in_thread = start_sing_in(qd)
