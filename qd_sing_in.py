@@ -12,10 +12,8 @@ from threading import Thread
 class NextDayTools:
     def __init__(self, first_run=True):
         self.start_time_datetime = datetime.datetime.now()      # 记录程序启动时间
-        self.record_day_old = datetime.datetime.day             # 记录日期
         self.save_datetime = datetime.datetime.now()            # 记录时间
         self.update_datetime = datetime.datetime.now()          # 持续记录的更新时间
-        self.next_datetime = datetime.datetime.now()            # 记录下一次执行时间
         self.first_run = first_run                              # 第一次运行记录
 
     # 更新时间
@@ -24,12 +22,13 @@ class NextDayTools:
 
     # 刷新日期
     def refresh_day(self):
-        self.record_day_old = datetime.datetime.day
         self.save_datetime = datetime.datetime.now()
+        print('刷新日期')
 
     def check_new_day(self):
 
         result = False
+
         _day = (self.update_datetime.day - self.save_datetime.day)
 
         if _day != 0:
@@ -37,15 +36,13 @@ class NextDayTools:
 
         if self.first_run:
             result = True
-            self.first_run =False
+            self.first_run = False
 
         print('程序启动时间：'+self.start_time_datetime.strftime('%Y-%m-%d %H:%M:%S')+'\n检查是否新的一天!\ntime_now  = '
               + self.update_datetime.strftime('%Y-%m-%d %H:%M:%S')+'\nsave_time = '
               + self.save_datetime.strftime('%Y-%m-%d %H:%M:%S')+'\n结果:'+str(_day))
 
         return result
-
-
 
     def check_time_seconds(self, seconds):
         result = False
