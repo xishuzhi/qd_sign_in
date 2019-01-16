@@ -6,6 +6,7 @@ import time
 import datetime
 import os
 import json
+from threading import Thread
 
 
 class NextDayTools:
@@ -93,8 +94,9 @@ class qd_sing_in:
                     f.close()
                     self.browser.delete_all_cookies()
                     for l in cookies_lsit:
-                        self.browser.add_cookie(l)
                         print('导入cookies：' + str(l))
+                        self.browser.add_cookie(l)
+
             except WebDriverException as e:
                 print('导入cookies错误：' + e.msg)
         self.browser.get(self.url_qd)
@@ -104,7 +106,7 @@ class qd_sing_in:
 
     def save_cookies(self):
         self.cookies = self.browser.get_cookies()
-        with open('qd.cookies.txt', 'w', encoding='utf-8') as f:
+        with open('qd.cookies2.txt', 'w', encoding='utf-8') as f:
             f.write(json.dumps(self.cookies))
             f.close()
             print("保存cookies")
@@ -114,14 +116,14 @@ class qd_sing_in:
         try:
             if self.url != self.browser.current_url or refresh:
                 self.browser.get(self.url)
-                print("刷新页面")
             result = WebDriverWait(self.browser, 120).until(must_get_url(self.url))
+
         except WebDriverException as e:
             print('open_qd错误：'+e.msg)
         return result
 
     def open_myqd(self):
-        self.browser.get(self.url_myqd)
+        self.browser.get(self.url)
 
     def quit(self):
         self.browser.quit()
@@ -199,6 +201,7 @@ class qd_sing_in:
             if self.index == 8:
                 print('sing_in今天的签到已经完成')
                 sing_finish = True
+                self.save_cookies()
                 return sing_finish, second
             btn = self.browser.find_element_by_class_name('ui-button')
             if btn.text == '领取':
@@ -222,27 +225,47 @@ class qd_sing_in:
         return sing_finish, second
 
 
+class start_sing_in(Thread):
+    def __init__(self, qd):
+        Thread.__init__(self)
+        self.qd = qd
+
+    def run(self):
+        # 登录起点
+        if self.qd.login_qd():
+            # 签到结果是否完成,距离下一次签到剩余等待时间（秒）
+            is_finish, seconds = self.qd.sing_in()
+            while True:
+                os.system('cls')
+                if not is_finish:
+                    seconds = self.qd.check_next_time()
+                    if seconds <= 0:
+                        is_finish, seconds = self.qd.sing_in()
+                    time.sleep(1)
+                else:
+                    print('main今天领取经验已经完成')
+                    self.qd.quit()
+                    break
+
+
 def main():
+    # 初始化计时工具
     dt = NextDayTools()
-    qd = qd_sing_in()
-    is_finish = False
-    seconds = 0
     while True:
-        dt.update()
-        if dt.check_new_day() or not is_finish:
-            refresh = False
-            if qd.index == 8:
-                refresh = True
-            if qd.open_qd_level(refresh):
-                if seconds <= 0:
-                    is_finish, seconds = qd.sing_in()
-                    if is_finish:
-                        dt.refresh_day()
-                        qd.open_myqd()
-        else:
-            print("今天签到已完成")
-            time.sleep(10)
-    qd.quit()
+        os.system('cls')
+        dt.update()  # 更新时间记录
+        if dt.check_new_day():
+            print('main第二天了，开始领取经验')
+            # 刷新时间记录
+            dt.refresh_day()
+            # 初始化起点签到类
+            qd = qd_sing_in()
+            sing_in_thread = start_sing_in(qd)
+            sing_in_thread.start()
+            sing_in_thread.join()
+            del qd
+            print('main签到完成，退出线程')
+        time.sleep(10)
 
 
 def get_time():
@@ -251,6 +274,41 @@ def get_time():
     t = {'年': str(dt.strftime('%Y')), '月': str(dt.strftime('%m')), '日': str(dt.strftime('%d')),
          '时': str(dt.strftime('%H')), '分': str(dt.strftime('%M')), '秒': str(dt.strftime('%S'))}
     return t
+
+
+def test():
+    # 初始化计时工具
+    dt = NextDayTools()
+    # 初始化起点签到类
+    qd = qd_sing_in()
+    # 登录起点
+    if qd.login_qd():
+        # 签到结果是否完成,签到序号,距离下一次签到剩余等待时间（秒）
+        is_finish, seconds = qd.sing_in()
+        try_count = 0
+        while True:
+            os.system('cls')
+            dt.update()  # 更新时间记录
+            if dt.check_new_day():
+                print('第二天了，开始签到')
+                # 刷新页面
+                if qd.open_qd_level(True):
+                    # 执行签到函数
+                    is_finish, seconds = qd.sing_in()
+                # 新的一天，刷新日期，不管是否成功签到都刷新日期
+                dt.refresh_day()
+            if not is_finish:
+                is_finish, seconds = qd.check_next_time()
+                if seconds < 0:
+                    is_finish, seconds = qd.sing_in()
+            else:
+                print('今天签到已经完成')
+            if qd.check_login_failed():
+                try_count += 1
+            if try_count > 5:
+                break
+            time.sleep(10)
+    qd.quit()
 
 
 if __name__ == "__main__":
