@@ -228,17 +228,15 @@ def main():
     is_finish = False
     seconds = 0
     while True:
+        os.system('cls')
         dt.update()
         if dt.check_new_day() or not is_finish:
-            refresh = False
-            if qd.index == 8:
-                refresh = True
-            if qd.open_qd_level(refresh):
-                if seconds <= 0:
-                    is_finish, seconds = qd.sing_in()
-                    if is_finish:
-                        dt.refresh_day()
-                        qd.open_myqd()
+            if qd.open_qd_level():
+                is_finish, seconds = qd.sing_in()
+                if is_finish:
+                    dt.refresh_day()
+                    qd.open_myqd()
+            time.sleep(1)
         else:
             print("今天签到已完成")
             time.sleep(10)
