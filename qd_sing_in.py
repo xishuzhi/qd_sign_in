@@ -123,6 +123,9 @@ class qd_sing_in:
     def open_myqd(self):
         self.browser.get(self.url_myqd)
 
+    def refresh(self):
+        self.browser.refresh()
+
     def quit(self):
         self.browser.quit()
 
@@ -221,12 +224,19 @@ class qd_sing_in:
             print('貌似签到完成了，需要再次检查')
         return sing_finish, second
 
+    def sing_in_my(self):
+        try:
+            btn = self.browser.find_element_by_class_name('ui-button')
+            btn.click()
+        except WebDriverException:
+            pass
 
 def main():
     dt = NextDayTools()
     qd = qd_sing_in()
     is_finish = False
     seconds = 0
+    count = 0
     while True:
         os.system('cls')
         dt.update()
@@ -239,6 +249,12 @@ def main():
             time.sleep(1)
         else:
             print("今天签到已完成")
+            qd.sing_in_my()
+            count = count + 1
+            if count >= 720:
+                count = 0
+                qd.refresh()
+                print('刷新页面一次')
             time.sleep(10)
     qd.quit()
 
