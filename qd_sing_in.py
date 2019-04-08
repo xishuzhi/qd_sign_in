@@ -31,6 +31,7 @@ class NextDayTools:
         _day = (self.update_datetime.day - self.save_datetime.day)
 
         if _day != 0:
+            time.sleep(60)
             result = True
 
         if self.first_run:
@@ -228,6 +229,9 @@ class qd_sing_in:
         try:
             btn = self.browser.find_element_by_class_name('ui-button')
             btn.click()
+            # self.browser.implicitly_wait(1)
+            time.sleep(5)
+            self.refresh()
         except WebDriverException:
             pass
 
@@ -255,7 +259,7 @@ def main():
                 count = 0
                 qd.refresh()
                 print('刷新页面一次')
-            time.sleep(10)
+            time.sleep(5)
     qd.quit()
 
 
